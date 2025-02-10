@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="client-details">
+        <div class="client-details-header">
+            <h3>{{ client.name }} {{ client.surname }}</h3>
+            <form method="POST" action="{{ url_for('delete_client', client_id=client.id) }}" class="delete-form">
+                <button type="submit" onclick="return confirm('Are you sure you want to delete this client?')">Delete Client</button>
+            </form>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                  <li class="{{ category }} {{ message }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('edit_client', client_id=client.id) }}">
+            <div class="client-info">
+                <p><strong>Name:</strong> <input type="text" name="name" value="{{ client.name }}" required></p>
+                <p><strong>Surname:</strong> <input type="text" name="surname" value="{{ client.surname }}" required></p>
+                <p><strong>Email:</strong> <input type="email" name="email" value="{{ client.email }}"></p>
+                <p><strong>Phone:</strong> <input type="text" name="phone" value="{{ client.phone }}"></p>
+                <p><strong>Address:</strong> <input type="text" name="address" value="{{ client.address }}"></p>
+                <p><strong>Notes:</strong> <textarea name="notes">{{ client.notes }}</textarea></p>
+                <p><strong>Last Dive Day:</strong> <input type="date" name="last_dive_day" value="{{ client.last_dive_day.strftime('%Y-%m-%d') if client.last_dive_day else '' }}"></p>
+                <p><strong>Certification Number:</strong> <input type="text" name="certification_number" value="{{ client.certification_number }}"></p>
+                <p><strong>Certification Level:</strong> <input type="text" name="certification_level" value="{{ client.certification_level }}"></p>
+                <p><strong>Nitrox Certification Number:</strong> <input type="text" name="nitrox_certification_number" value="{{ client.nitrox_certification_number }}"></p>
+                <p><strong>Weights Amount:</strong> <input type="number" name="weights_amount" value="{{ client.weights_amount }}"></p>
+                <p><strong>Mask Size:</strong>
+                    <select name="mask_size">
+                        <option value="">-- Select --</option>
+                        <option value="adult" {% if client.mask_size == 'adult' %}selected{% endif %}>Adult</option>
+                        <option value="kid" {% if client.mask_size == 'kid' %}selected{% endif %}>Kid</option>
+                    </select>
+                </p>
+                <p><strong>BCD Size:</strong>
+                    <select name="bcd_size">
+                        <option value="">-- Select --</option>
+                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            <option value="{{ size }}" {% if client.bcd_size == size %}selected{% endif %}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p><strong>Wetsuit Size:</strong>
+                    <select name="wetsuit_size">
+                        <option value="">-- Select --</option>
+                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            <option value="{{ size }}" {% if client.wetsuit_size == size %}selected{% endif %}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p><strong>Fins Size:</strong>
+                    <select name="fins_size">
+                        <option value="">-- Select --</option>
+                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            <option value="{{ size }}" {% if client.fins_size == size %}selected{% endif %}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+            </div>
+            <button type="submit">Save Changes</button>
+        </form>
+
+        <section class="client-visits">  <h3>Visits</h3>
+            <a href="{{ url_for('edit_visit', client_id=client.id) }}" class="add-visit-button">Add Visit</a>  {# Add Visit Button #}
+            {% if visits_data %}
+                {% for visit_item in visits_data %}
+                    {% set visit = visit_item.visit %}
+                    {% set leader = visit_item.leader_client %}
+                    {% set other_clients = visit_item.other_clients %}
+                    <div class="visit-block">
+                        <div class="visit-block-header">  <p><strong>Visit ID:</strong> {{ visit.id }}</p>
+                            <a href="{{ url_for('edit_visit', visit_id=visit.id, client_id=client.id) }}" class="edit-visit-button">Edit</a>  {# Edit Button #}
+                        </div>
+                        <p><strong>Dates:</strong> {{ visit.start_date }} to {{ visit.end_date }}</p>
+                        <p><strong>Place of Stay:</strong> {{ visit.place_of_stay }}</p>
+                        <p><strong>Trips:</strong> <em>(Trips info will be here later)</em></p> <p><strong>Other Clients:</strong>
+                            {% if visit.client_ids %}
+                                <ul>
+                                {% for other_client in other_clients %}
+                                    <li><a href="{{ url_for('client_details', client_id=other_client.id) }}">{{ other_client.name }} {{ other_client.surname }}</a></li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <em>No other clients in this visit.</em>
+                            {% endif %}
+                        </p>
+                        <p><strong>Leader Client:</strong> {% if leader %}
+                                <a href="{{ url_for('client_details', client_id=leader.id) }}">{{ leader.name }} {{ leader.surname }}</a>
+                            {% else %}
+                                <em>Unknown Leader Client</em>
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No visits associated with this client.</p>
+            {% endif %}
+        </section>
+
+
+        <a href="{{ url_for('clients') }}">Back to Clients</a>
+    </section>
+{% endblock %}

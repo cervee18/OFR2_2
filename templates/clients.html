@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="clients">
+        <h2>Clients</h2>
+
+        <div class="search-box">
+            <form method="GET" action="{{ url_for('clients') }}">
+                <input type="text" name="search" placeholder="Search clients..." value="{{ search_term or '' }}">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                  <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <h3>Client List</h3>
+        <table class="client-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if clients %}  {# Check if clients list is not empty #}
+                    {% for client in clients %}
+                    <tr>
+                        <td><a href="{{ url_for('client_details', client_id=client.id) }}">{{ client.name }}</a></td>
+                        <td>{{ client.surname }}</td>
+                        <td>{{ client.email }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %} {# If clients list is empty #}
+                    <tr><td colspan="3">Perform a search to see clients.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <h3>Add New Client</h3>
+        <div class="add-client-form">
+            <form method="POST" action="{{ url_for('clients') }}">
+                <input type="text" name="name" placeholder="Name" required><br>
+                <input type="text" name="surname" placeholder="Surname" required><br>
+                <input type="email" name="email" placeholder="Email" required><br>
+                <button type="submit">Add Client</button>
+            </form>
+        </div>
+    </section>
+{% endblock %}
