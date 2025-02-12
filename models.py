@@ -1,7 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-
+clients_trips_association = db.Table('clients_trips',
+    db.Column('client_id', db.Integer, db.ForeignKey('client.id'), primary_key=True),
+    db.Column('trip_id', db.Integer, db.ForeignKey('trip.id'), primary_key=True)
+)
 class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -20,7 +23,7 @@ class Client(db.Model):
     bcd_size = db.Column(db.String(20), nullable=True)  # Optional, size from XXS to XXL or None
     wetsuit_size = db.Column(db.String(20), nullable=True) # Optional, size from XXS to XXL or None
     fins_size = db.Column(db.String(20), nullable=True)   # Optional, size from XXS to XXL or None
-
+    trips = db.relationship('Trip', secondary=clients_trips_association, backref=db.backref('clients', lazy='dynamic'))
 
     def __repr__(self):
         return f"<Client {self.name} {self.surname}>"
@@ -38,18 +41,16 @@ class Visit(db.Model):
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, unique=True, nullable=False) # Same consideration as client_id
-    trip_name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    trip_class = db.Column(db.String(50)) # New field for trip class
     start_time = db.Column(db.Time)
-    is_morning = db.Column(db.Boolean) # Or String 'morning'/'afternoon' - using Boolean for now, True=Morning
-    assigned_place = db.Column(db.String(100))
-    assigned_staff = db.Column(db.String(200)) # Comma-separated staff info for now
-    client_ids = db.Column(db.String(200)) # Comma-separated client IDs for now
-    max_clients = db.Column(db.Integer)
+    end_time = db.Column(db.Time)
+    max_divers = db.Column(db.Integer)
     needed_staff = db.Column(db.Integer)
+    date = db.Column(db.Date, nullable=False) # Date when the trip takes place
 
     def __repr__(self):
-        return f"<Trip {self.trip_name}>"
+        return f"Trip('{self.name}', '{self.trip_class}', '{self.date}')"
 
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)

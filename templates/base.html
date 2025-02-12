@@ -5,22 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dive Center Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>OFR2 - Diving Center Management</title>
 </head>
 <body>
     <header>
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('home') }}">Home</a></li>
-                <li><a href="{{ url_for('clients') }}">Clients</a></li>
-                </ul>
-        </nav>
-        <h1>Dive Center</h1>
-    </header>
-    <main>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('clients') }}">Clients</a></li>
+            <li><a href="{{ url_for('trips') }}">Trips Schedule</a></li>  {# --- ADDED TRIPS LINK HERE --- #}
+        </ul>
+    </nav>
+    <div class="container">
         {% block content %}{% endblock %}
-    </main>
-    <footer>
-        <p>&copy; 2023 Dive Center Management</p>
-    </footer>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -1,164 +1,124 @@
-/* static/style.css */
-
+/* Global Variables */
 :root {
     --light-turquoise: #AFEEEE;
     --almost-white: #F8F8FF;
+    --border-color: #ddd;
+    --text-color: #333;
+    --danger-color: #d9534f;
+    --danger-hover: #c93a35;
+    --link-color: #007bff;
+    --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+    --border-radius: 8px;
+    --padding-standard: 20px;
 }
 
+/* Base Styles */
 body {
     font-family: sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--almost-white);
-    color: #333;
+    color: var(--text-color);
 }
 
+/* Layout Components */
 header {
     background-color: var(--light-turquoise);
-    color: #333;
+    color: var(--text-color);
     padding: 1em 0;
     text-align: center;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--border-color);
 }
 
 main {
-    padding: 20px;
-    margin: 20px;
-    background-color: var(--almost-white); /* Ensure main content area also has background */
-    padding-bottom: 60px; /* Add padding at the bottom, adjust value as needed */
+    padding: var(--padding-standard);
+    margin: var(--padding-standard);
+    background-color: var(--almost-white);
+    padding-bottom: 60px;
 }
 
 footer {
     text-align: center;
     padding: 1em 0;
     background-color: var(--light-turquoise);
-    color: #333;
-    border-top: 2px solid #ddd;
-    position: fixed; /* Stay at bottom */
+    color: var(--text-color);
+    border-top: 2px solid var(--border-color);
+    position: fixed;
     bottom: 0;
     width: 100%;
-    height: 40px; /* Optionally set a fixed height for the footer, if not already implied by content */
-    line-height: 40px; /* Vertically center text in footer if height is set */
+    height: 40px;
+    line-height: 40px;
 }
 
-.home {
+/* Common Components */
+.section-container {
     background-color: var(--almost-white);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    padding: var(--padding-standard);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
 }
 
-.home h2 {
-    color: #333;
+.button {
+    padding: 8px 12px;
+    background-color: var(--light-turquoise);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-color);
+    text-decoration: none;
 }
 
-.home p {
-    line-height: 1.6;
+.button:hover {
+    background-color: #9ee6e6;
 }
 
-/* navigation */
+.button-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
 
+.button-danger:hover {
+    background-color: var(--danger-hover);
+}
+
+.form-input {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    width: calc(100% - 22px);
+    margin-bottom: 10px;
+}
+
+/* Navigation */
 header nav {
-    background-color: var(--light-turquoise); /* Match header background */
     padding: 0.5em 0;
-    border-bottom: 2px solid #ddd; /* Match header border */
 }
 
 header nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
-    text-align: center; /* Center the navigation links */
+    text-align: center;
 }
 
 header nav ul li {
-    display: inline; /* Display list items horizontally */
-    margin: 0 15px; /* Space between nav items */
+    display: inline;
+    margin: 0 15px;
 }
 
 header nav ul li a {
     text-decoration: none;
-    color: #333; /* Match header text color */
+    color: var(--text-color);
     font-weight: bold;
     padding: 8px 12px;
     border-radius: 4px;
 }
 
 header nav ul li a:hover {
-    background-color: #ddd; /* Slightly darker hover effect */
+    background-color: var(--border-color);
 }
 
-/* Keep the existing header h1 styling, or adjust if needed */
-header h1 {
-    margin: 0; /* Remove default margin to better align with nav */
-    padding: 1em 0;
-    text-align: center;
-}
-
-/* Clients Page Styles */
-.clients .search-box {
-    margin-bottom: 20px;
-}
-
-.clients .search-box input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 200px;
-}
-
-.clients .search-box button {
-    padding: 8px 12px;
-    background-color: var(--light-turquoise);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.clients .client-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-.clients .client-table th, .clients .client-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-.clients .client-table th {
-    background-color: var(--light-turquoise);
-}
-
-.clients .client-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-.clients .add-client-form {
-    background-color: var(--almost-white);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-}
-
-.clients .add-client-form input[type="text"],
-.clients .add-client-form input[type="email"] {
-    width: calc(100% - 22px); /* Adjust for padding and border */
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.clients .add-client-form button {
-    padding: 8px 12px;
-    background-color: var(--light-turquoise);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
+/* Flash Messages */
 .flashes {
     list-style-type: none;
     padding: 0;
@@ -173,202 +133,75 @@ header h1 {
     border-radius: 4px;
 }
 
-
-/* Client Details Page Styles */
-.client-details .client-info {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+/* Clients Page */
+.clients .search-box {
+    margin-bottom: var(--padding-standard);
 }
 
-.client-details .client-info p {
-    margin-bottom: 8px;
-}
-
-.client-details .delete-form button {
-    padding: 8px 12px;
-    background-color: #d9534f; /* Reddish color for delete */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.client-details a {
-    display: inline-block;
-    margin-top: 10px;
-    color: #007bff;
-    text-decoration: none;
-}
-
-.client-details a:hover {
-    text-decoration: underline;
-}
-
-/* Additions to static/style.css for client_details header */
-
-.client-details .client-details-header {
-    display: flex;          /* Enable Flexbox */
-    justify-content: space-between; /* Distribute space between heading and button */
-    align-items: center;     /* Vertically align items in the center */
-    margin-bottom: 20px;     /* Add some space below the header */
-}
-
-.client-details .client-details-header h3 {
-    margin: 0;              /* Reset default margin for heading */
-}
-
-.client-details .client-details-header .delete-form {
-    margin: 0;              /* Reset default margin for form, if any */
-}
-
-/* Keep the existing .client-details .delete-form button styles, or adjust if needed */
-.client-details .delete-form button {
-    padding: 8px 12px;
-    background-color: #d9534f; /* Reddish color for delete */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-/* Add to static/style.css */
-
-/* Client Visits Section */
-.client-visits {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: var(--almost-white);
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-}
-
-.client-visits h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-.client-visits .visit-block {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    background-color: #f9f9f9;
-}
-
-.client-visits .visit-block p {
-    margin-bottom: 5px;
-}
-
-/* Add to static/style.css */
-
-/* Edit Visit Page Styles */
-.edit-visit .visit-form {
-    background-color: var(--almost-white);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-
-.edit-visit .visit-form p {
-    margin-bottom: 10px;
-}
-
-.edit-visit .visit-form input[type="date"],
-.edit-visit .visit-form input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: calc(100% - 22px);
-}
-
-.edit-visit .client-search-box {
-    background-color: var(--almost-white);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-}
-
-.edit-visit .client-search-box h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-.edit-visit .client-search-box input[type="text"] {
-    width: calc(100% - 22px);
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-bottom: 15px;
-}
-
+.clients .client-table,
 .edit-visit .client-table {
     width: 100%;
     border-collapse: collapse;
+    margin-bottom: var(--padding-standard);
 }
 
-.edit-visit .client-table th, .edit-visit .client-table td {
-    border: 1px solid #ddd;
+.table-common {
+    border: 1px solid var(--border-color);
+}
+
+.table-common th,
+.table-common td {
     padding: 8px;
     text-align: left;
+    border: 1px solid var(--border-color);
 }
 
-.edit-visit .client-table th {
+.table-common th {
     background-color: var(--light-turquoise);
 }
 
-.edit-visit .client-table tbody tr:nth-child(even) {
+.table-common tbody tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-.edit-visit button[type="submit"] {
-    padding: 10px 15px;
-    background-color: var(--light-turquoise);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
+/* Client Details */
+.client-details .client-info {
+    margin-bottom: var(--padding-standard);
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: #f9f9f9;
 }
 
-.edit-visit a {
-    display: inline-block;
-    margin-top: 10px;
-    color: #007bff;
-    text-decoration: none;
+.client-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--padding-standard);
 }
 
-.edit-visit a:hover {
-    text-decoration: underline;
+/* Visit Styles */
+.client-visits {
+    margin-top: 30px;
 }
 
-/* Add to static/style.css */
-
-/* Added Clients List Styles */
-.edit-visit .added-clients-list {
-    background-color: var(--almost-white);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-
-.edit-visit .added-clients-list h3 {
-    margin-top: 0;
+.visit-block {
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: var(--border-radius);
     margin-bottom: 15px;
+    background-color: #f9f9f9;
 }
 
-.edit-visit .added-clients-list ul {
-    list-style: none;
-    padding: 0;
+/* Edit Visit Page */
+.edit-visit .added-clients-list {
+    margin-bottom: var(--padding-standard);
 }
 
 .edit-visit .added-clients-list li {
     margin-bottom: 8px;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     background-color: #f9f9f9;
     display: flex;
@@ -376,38 +209,127 @@ header h1 {
     align-items: center;
 }
 
-.edit-visit .added-clients-list li button {
-    padding: 5px 10px;
-    background-color: #d9534f; /* Red color for remove */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.8em;
+/* Trips Page */
+.trips-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--padding-standard);
+    display: flex;  /* Add flex display */
+    gap: 30px;  /* Space between sections */
+    align-items: flex-start;  /* Align items to top */
 }
 
+.trips-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;  /* Align items to left instead of center */
+    gap: var(--padding-standard);
+    margin-bottom: 30px;
+}
 
-/* Style for "Add" buttons in search results table */
-.edit-visit .client-table button {
-    padding: 5px 10px;
+.calendar {
+    width: 300px;  /* Reduced from 800px */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 10px;  /* Reduced padding */
+    background-color: white;
+    box-shadow: var(--shadow-light);
+    margin-right: auto;  /* Aligns to left edge */
+    margin-left: 0;
+}
+
+.calendar-header {
+    margin-bottom: var(--padding-standard);
+}
+
+.calendar-navigation {
+    display: flex;
+    justify-content: flex-start;  /* Align to left */
+    gap: 8px;  /* Slightly reduced gap */
+    margin-bottom: 10px;  /* Reduced margin */
+}
+
+.calendar-navigation select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.calendar table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calendar th,
+.calendar td {
+    padding: 4px;  /* Reduced padding */
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.calendar td {
+    height: 30px;  /* Reduced from 80px */
+    vertical-align: middle;
+    font-size: 0.9em;  /* Slightly smaller font */
+}
+
+.calendar td a {
+    display: block;
+    padding: 5px;
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.calendar td.selected-day {
+    background-color: #e6f3ff;
+    border: 2px solid var(--link-color);
+}
+
+.calendar td.other-month-day {
+    background-color: #f9f9f9;
+}
+
+.calendar td.other-month-day a {
+    color: #999;
+}
+
+.add-trip-button {
+    display: inline-block;
+    padding: 12px 24px;
     background-color: var(--light-turquoise);
-    border: none;
+    color: var(--text-color);
+    text-decoration: none;
     border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.8em;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    border: 1px solid var(--border-color);
 }
 
-/* Delete Visit Button Style */
-.edit-visit .delete-form button[type="submit"] {
-    padding: 10px 15px;
-    background-color: #d9534f; /* Red background */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
+.daily-trips {
+    flex: 1;  /* Take up remaining space */
+    min-width: 0;  /* Prevent flex item from overflowing */
+    padding: var(--padding-standard);
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    margin: 0;  /* Remove auto margins */
 }
 
-.edit-visit .delete-form button[type="submit"]:hover {
-    background-color: #c93a35; /* Darker red on hover */
+.daily-trips h3 {
+    margin-bottom: var(--padding-standard);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--light-turquoise);
+}
+
+.trips-list {
+    list-style: none;
+    padding: 0;
+}
+
+.trips-list li {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 10px;
+    margin-bottom: 10px;
 }

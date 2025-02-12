@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="trips-page">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for category, message in messages %}
+        <li class="{{ category }} {{ message }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <div class="trips-header">
+        <div class="calendar">  {# Calendar Container #}
+            <div class="calendar-header">
+                <form method="GET" action="{{ url_for('trips') }}" class="calendar-navigation" id="calendar-form">
+                    <select name="month" id="month-selector">
+                        {% for month_num, month_name in months.items() %}
+                        <option value="{{ month_num }}" {% if selected_month == month_num|int %}selected{% endif %}>{{ month_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="year" id="year-selector">
+                        {% for year_option in years %}
+                        <option value="{{ year_option }}" {% if selected_year == year_option|int %}selected{% endif %}>{{ year_option }}</option>
+                        {% endfor %}
+                    </select>
+                    <a href="{{ url_for('trips') }}" class="today-button">Today</a>
+                </form>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set calendar_days = calendar.Calendar().monthdatescalendar(selected_year|int, selected_month|int) %}
+                    {% for week in calendar_days %}
+                    <tr>
+                        {% for day in week %}
+                        <td {% if day.strftime('%Y-%m-%d') == selected_date_str %}class="selected-day"{% endif %}
+                            {% if day.month != selected_month|int %}class="other-month-day"{% endif %}>
+                            <a href="{{ url_for('trips', year=selected_year, month=selected_month, date=day.strftime('%Y-%m-%d')) }}">{{ day.day }}</a>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('edit_trip') }}" class="add-trip-button">Create New Trip</a>
+    </div>
+
+    <section class="daily-trips">
+        <h3>Trips for {{ selected_date_str }}</h3>
+
+        <div class="trip-selection">
+            <form method="GET" action="{{ url_for('trips') }}" class="trip-selection-form" id="trip-selection-form">
+                <label for="trip-selector">Select a Trip:</label>
+                <select id="trip-selector" name="selected_trip_id" onchange="this.form.submit()">
+                    <option value="">-- Select Trip --</option>
+                    {% for trip_option in trips %}
+                    <option value="{{ trip_option.id }}" {% if selected_trip and selected_trip.id == trip_option.id %}selected{% endif %}>
+                        {{ trip_option.name }} ({{ trip_option.trip_class }}) - {{ trip_option.start_time }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        {% if selected_trip %}
+        <div class="trip-info">
+            <h4>Trip Information</h4>
+            <p><strong>Name:</strong> {{ selected_trip.name }}</p>
+            <p><strong>Class:</strong> {{ selected_trip.trip_class }}</p>
+            <p><strong>Date:</strong> {{ selected_trip.date }}</p>
+            <p><strong>Start Time:</strong> {{ selected_trip.start_time }}</p>
+            <p><strong>End Time:</strong> {{ selected_trip.end_time }}</p>
+            <p><strong>Max Divers:</strong> {{ selected_trip.max_divers }}</p>
+            <p><strong>Staff Needed:</strong> {{ selected_trip.needed_staff }}</p>
+        </div>
+
+        <div class="client-table-container">
+            <h4>Clients Assigned to Trip</h4>
+            <table class="client-table table-common">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Certification</th>
+                        <th>Last Dive</th>
+                        <th>Equipment Needed</th>
+                        <th>Nitrox Cert</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if clients_on_trip %}
+                    {% for client in clients_on_trip %}
+                    <tr>
+                        <td>{{ client.name }}</td>
+                        <td>{{ client.certification_level }}</td>
+                        <td>{{ client.last_dive_day }}</td>
+                        <td>{{ client.equipment_needed }}</td>
+                        <td>{% if client.nitrox_certified %}Yes{% else %}No{% endif %}</td>
+                        <td>{{ client.notes }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr><td colspan="6">No clients assigned to this trip yet.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>Please select a trip to view details.</p>
+        {% endif %}
+
+    </section>
+
+    <script>
+        document.getElementById('month-selector').addEventListener('change', function() {
+            document.getElementById('calendar-form').submit();
+        });
+
+        document.getElementById('year-selector').addEventListener('change', function() {
+            document.getElementById('calendar-form').submit();
+        });
+    </script>
+</section>
+{% endblock %}

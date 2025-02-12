@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="edit-trip-page">
+        <h2>Create New Trip</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for category, message in messages %}
+                        <li class="{{ category }} {{ message }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="section-container">
+            <form method="POST" action="{{ url_for('edit_trip') }}" class="edit-trip-form">
+                <div class="form-group">
+                    <label for="name">Trip Name:</label>
+                    <input type="text" id="name" name="name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="trip_class">Trip Class:</label>
+                    <select id="trip_class" name="trip_class" class="form-input" required>
+                        {% for trip_class in trip_classes %}
+                            <option value="{{ trip_class }}">{{ trip_class }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date" value="{{ selected_date.strftime('%Y-%m-%d') }}" class="form-input" required>
+                    <small class="form-text text-muted">Date will default to selected date on calendar.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="start_time">Start Time:</label>
+                    <input type="time" id="start_time" name="start_time" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="end_time">End Time:</label>
+                    <input type="time" id="end_time" name="end_time" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="max_divers">Max Divers:</label>
+                    <input type="number" id="max_divers" name="max_divers" class="form-input" value="1" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="needed_staff">Staff Needed:</label>
+                    <input type="number" id="needed_staff" name="needed_staff" class="form-input" value="1" min="1">
+                </div>
+
+                <button type="submit" class="button">Create Trip</button>
+                <a href="{{ url_for('trips') }}" class="button button-danger">Cancel</a>
+            </form>
+        </div>
+    </section>
+{% endblock %}
