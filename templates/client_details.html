@@ -31,38 +31,6 @@
                 <p><strong>Certification Number:</strong> <input type="text" name="certification_number" value="{{ client.certification_number }}"></p>
                 <p><strong>Certification Level:</strong> <input type="text" name="certification_level" value="{{ client.certification_level }}"></p>
                 <p><strong>Nitrox Certification Number:</strong> <input type="text" name="nitrox_certification_number" value="{{ client.nitrox_certification_number }}"></p>
-                <p><strong>Weights Amount:</strong> <input type="number" name="weights_amount" value="{{ client.weights_amount }}"></p>
-                <p><strong>Mask Size:</strong>
-                    <select name="mask_size">
-                        <option value="">-- Select --</option>
-                        <option value="adult" {% if client.mask_size == 'adult' %}selected{% endif %}>Adult</option>
-                        <option value="kid" {% if client.mask_size == 'kid' %}selected{% endif %}>Kid</option>
-                    </select>
-                </p>
-                <p><strong>BCD Size:</strong>
-                    <select name="bcd_size">
-                        <option value="">-- Select --</option>
-                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                            <option value="{{ size }}" {% if client.bcd_size == size %}selected{% endif %}>{{ size }}</option>
-                        {% endfor %}
-                    </select>
-                </p>
-                <p><strong>Wetsuit Size:</strong>
-                    <select name="wetsuit_size">
-                        <option value="">-- Select --</option>
-                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                            <option value="{{ size }}" {% if client.wetsuit_size == size %}selected{% endif %}>{{ size }}</option>
-                        {% endfor %}
-                    </select>
-                </p>
-                <p><strong>Fins Size:</strong>
-                    <select name="fins_size">
-                        <option value="">-- Select --</option>
-                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                            <option value="{{ size }}" {% if client.fins_size == size %}selected{% endif %}>{{ size }}</option>
-                        {% endfor %}
-                    </select>
-                </p>
             </div>
             <button type="submit">Save Changes</button>
         </form>

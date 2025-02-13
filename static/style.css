@@ -316,10 +316,103 @@ header nav ul li a:hover {
     margin: 0;  /* Remove auto margins */
 }
 
-.daily-trips h3 {
-    margin-bottom: var(--padding-standard);
-    padding-bottom: 10px;
+/* Trips Tabs Styles */
+.trips-tabs {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+
+.tabs-header {
+    display: flex;
+    gap: 2px;
+    background-color: #f1f1f1;
+    padding: 8px 8px 0;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
     border-bottom: 2px solid var(--light-turquoise);
+    overflow-x: auto;
+}
+
+.tab-button {
+    padding: 12px 16px;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;  /* Align content to the left */
+    gap: 6px;
+    min-width: 200px;
+    transition: all 0.2s ease;
+}
+
+.tab-button .trip-name {
+    font-weight: 500;
+    font-size: 1em;
+}
+
+.tab-details {
+    font-size: 0.85em;
+    color: #666;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tab-details span {
+    display: block;
+}
+
+.tab-button:hover {
+    background-color: #fff;
+}
+
+.tab-button.active {
+    background-color: white;
+    border-color: var(--light-turquoise);
+    margin-bottom: -2px;
+    border-bottom: 2px solid white;
+    font-weight: bold;
+}
+
+.tab-details {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.tab-content {
+    padding: var(--padding-standard);
+}
+
+/* Trip Info Styles */
+.trip-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+}
+
+.trip-info h4 {
+    margin-top: 0;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--light-turquoise);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.trip-info p {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.trip-info strong {
+    color: var(--text-color);
+    min-width: 100px;
+    display: inline-block;
 }
 
 .trips-list {
