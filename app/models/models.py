@@ -1,6 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
+from app import db
 
-db = SQLAlchemy()
 
 clients_trips_association = db.Table('clients_trips',
     db.Column('client_id', db.Integer, db.ForeignKey('client.id'), primary_key=True),
@@ -46,18 +45,23 @@ class Visit(db.Model):
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    trip_class = db.Column(db.String(50))
-    start_time = db.Column(db.Time)
-    end_time = db.Column(db.Time)
+    trip_class_id = db.Column(db.Integer, db.ForeignKey('trip_class.id'), nullable=False)
+    start_time = db.Column(db.Time)  # Can be overridden from the trip class default
+    assigned_staff = db.Column(db.Text)  # Store staff IDs as comma-separated values
     max_divers = db.Column(db.Integer)
-    needed_staff = db.Column(db.Integer)
     date = db.Column(db.Date, nullable=False)
+    place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
+
+    # Relationship to TripClass
+    trip_class = db.relationship('TripClass', backref='trips', lazy=True)
+    
+    # Keep existing relationships
     clients = db.relationship('Client',
                             secondary=clients_trips_association,
                             back_populates='trips')
     
     def __repr__(self):
-        return f"Trip('{self.name}', '{self.trip_class}', '{self.date}')"
+        return f"Trip('{self.name}', '{self.trip_class.name if self.trip_class else 'No Class'}', '{self.date}')"
 
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,3 +94,24 @@ class TripClientEquipment(db.Model):
     __table_args__ = (
         db.UniqueConstraint('trip_id', 'client_id', name='unique_trip_client_equipment'),
     )
+
+class TripClass(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    start_time = db.Column(db.Time, nullable=False)
+    
+    def __repr__(self):
+        return f"TripClass('{self.name}', '{self.start_time}')"
+    
+class Place(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    is_boat = db.Column(db.Boolean, default=False, nullable=False)
+    description = db.Column(db.Text)
+    
+    # Relationship with trips
+    trips = db.relationship('Trip', backref='place', lazy=True)
+    
+    def __repr__(self):
+        place_type = "Boat" if self.is_boat else "Shore"
+        return f"Place('{self.name}', Type: {place_type})"

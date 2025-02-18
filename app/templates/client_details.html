@@ -5,10 +5,10 @@
     <div class="client-header">
         <h2>{{ client.name }} {{ client.surname }}</h2>
         <div class="header-actions">
-            <form method="POST" action="{{ url_for('delete_client', client_id=client.id) }}" class="delete-client-form">
+            <form method="POST" action="{{ url_for('clients.delete_client', client_id=client.id) }}" class="delete-client-form">
                 <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to delete this client?')">Delete</button>
             </form>
-            <a href="{{ url_for('clients') }}" class="back-button">Back</a>
+            <a href="{{ url_for('clients.client_list') }}" class="back-button">Back</a>
         </div>
     </div>
 
@@ -25,7 +25,7 @@
     <div class="content-grid">
         <!-- Left Column: Client Information -->
         <div class="client-info-section">
-            <form method="POST" action="{{ url_for('edit_client', client_id=client.id) }}" class="client-edit-form">
+            <form method="POST" action="{{ url_for('clients.edit_client', client_id=client.id) }}" class="client-edit-form">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Name</label>
@@ -86,7 +86,7 @@
         <div class="visits-section">
             <div class="visits-header">
                 <h3>Visits</h3>
-                <a href="{{ url_for('edit_visit', client_id=client.id) }}" class="add-visit-button">Add Visit</a>
+                <a href="{{ url_for('visits.edit_visit', client_id=client.id) }}" class="add-visit-button">Add Visit</a>
             </div>
             
             <div class="visits-list">
@@ -97,7 +97,7 @@
                         <div class="visit-item">
                             <div class="visit-item-header">
                                 <span>{{ visit.start_date.strftime('%Y-%m-%d') }} - {{ visit.end_date.strftime('%Y-%m-%d') }}</span>
-                                <a href="{{ url_for('edit_visit', visit_id=visit.id, client_id=client.id) }}" class="edit-link">Edit</a>
+                                <a href="{{ url_for('visits.edit_visit', visit_id=visit.id, client_id=client.id) }}" class="edit-link">Edit</a>
                             </div>
                             <div class="visit-item-details">
                                 <span>{{ visit.place_of_stay }}</span>

@@ -1,7 +1,7 @@
 import os
 from faker import Faker
 from OFR2 import app  # Import the Flask app instance
-from models import db, Client
+from models.models import db, Client
 from datetime import date, timedelta
 import random
 

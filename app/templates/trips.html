@@ -5,7 +5,7 @@
     <!-- Calendar & Navigation -->
     <div class="calendar-section">
         <div class="calendar-header">
-            <form method="GET" action="{{ url_for('trips') }}" class="calendar-nav" id="calendar-form">
+            <form method="GET" action="{{ url_for('trips.trip_list') }}" class="calendar-nav" id="calendar-form">
                 <select name="month" id="month-selector" class="calendar-select">
                     {% for month_num, month_name in months.items() %}
                         <option value="{{ month_num }}" {% if selected_month == month_num|int %}selected{% endif %}>
@@ -20,7 +20,7 @@
                         </option>
                     {% endfor %}
                 </select>
-                <a href="{{ url_for('trips', selected_trip_id=request.args.get('selected_trip_id')) }}" 
+                <a href="{{ url_for('trips.trip_list', selected_trip_id=request.args.get('selected_trip_id')) }}" 
                    class="today-button">Today</a>
             </form>
         </div>
@@ -38,7 +38,7 @@
                         {% for day in week %}
                             <td class="{% if day.strftime('%Y-%m-%d') == selected_date_str %}selected-day{% endif %}
                                        {% if day.month != selected_month|int %}other-month{% endif %}">
-                                <a href="{{ url_for('trips', year=selected_year, month=selected_month, 
+                                <a href="{{ url_for('trips.trip_list', year=selected_year, month=selected_month, 
                                          date=day.strftime('%Y-%m-%d'), 
                                          selected_trip_id=request.args.get('selected_trip_id')) }}">
                                     {{ day.day }}
@@ -51,7 +51,7 @@
         </table>
 
         <div class="calendar-actions">
-            <a href="{{ url_for('edit_trip') }}" class="new-trip-button">Create New Trip</a>
+            <a href="{{ url_for('trips.edit_trip') }}" class="new-trip-button">Create New Trip</a>
         </div>
     </div>
 
@@ -64,7 +64,7 @@
                 <div class="tabs-list">
                     {% for trip in trips %}
                         <button class="tab-button {% if selected_trip and selected_trip.id == trip.id %}active{% endif %}"
-                                onclick="window.location.href='{{ url_for('trips', year=selected_year, 
+                                onclick="window.location.href='{{ url_for('trips.trip_list', year=selected_year, 
                                          month=selected_month, date=selected_date_str, selected_trip_id=trip.id) }}'">
                             <span class="tab-title">{{ trip.name }}</span>
                             <span class="tab-info">{{ trip.trip_class }} - {{ trip.start_time.strftime('%H:%M') if trip.start_time }}</span>
@@ -117,12 +117,9 @@
                                             {% set equipment = client.equipment_assignments|selectattr("trip_id", "eq", selected_trip.id)|first %}
                                             <tr data-client-id="{{ client.id }}" 
                                                 data-trip-id="{{ selected_trip.id }}" 
-                                                <!-- Replace the data-original-data part in the tr element -->
-                                                <tr data-client-id="{{ client.id }}" 
-                                                    data-trip-id="{{ selected_trip.id }}" 
-                                                    data-original-data='{"mask_size":"{{ equipment.mask_size|default("") }}","bcd_size":"{{ equipment.bcd_size|default("") }}","wetsuit_size":"{{ equipment.wetsuit_size|default("") }}","fins_size":"{{ equipment.fins_size|default("") }}","weights_amount":"{{ equipment.weights_amount|default("") }}","nitrox":"{{ "yes" if client.nitrox_certification_number else "no" }}","notes":"{{ equipment.notes|default("") }}"}'>
+                                                data-original-data='{"mask_size":"{{ equipment.mask_size|default("") }}","bcd_size":"{{ equipment.bcd_size|default("") }}","wetsuit_size":"{{ equipment.wetsuit_size|default("") }}","fins_size":"{{ equipment.fins_size|default("") }}","weights_amount":"{{ equipment.weights_amount|default("") }}","nitrox":"{{ "yes" if client.nitrox_certification_number else "no" }}","notes":"{{ equipment.notes|default("") }}"}'>
                                                 <td>
-                                                    <a href="{{ url_for('client_details', client_id=client.id) }}" 
+                                                    <a href="{{ url_for('clients.client_details', client_id=client.id) }}" 
                                                        class="client-name-link">
                                                         {{ client.name }} {{ client.surname }}
                                                     </a>
@@ -205,7 +202,7 @@
 
     function openAddClientPopup() {
         {% if selected_trip %}
-            var popupUrl = "{{ url_for('trips_add_clients', trip_id=selected_trip.id) }}";
+            var popupUrl = "{{ url_for('trips.trips_add_clients', trip_id=selected_trip.id) }}";
             window.open(popupUrl, "AddClientsPopup", "width=600,height=400,resizable=yes,scrollbars=yes");
         {% endif %}
     }

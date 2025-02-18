@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="edit-trip-container">
+    <div class="page-header">
+        <h2>Create New Trip</h2>
+        <a href="{{ url_for('trips.trip_list') }}" class="back-button">Back</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="edit-trip-form-container">
+        <form method="POST" action="{{ url_for('trips.edit_trip') }}" class="edit-trip-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="trip_class_id">Trip Class <span class="required">*</span></label>
+                    <select id="trip_class_id" name="trip_class_id" required class="form-input" onchange="updateStartTime()">
+                        <option value="">Select Trip Class</option>
+                        {% for trip_class in trip_classes %}
+                            <option value="{{ trip_class.id }}" data-start-time="{{ trip_class.start_time.strftime('%H:%M') }}">
+                                {{ trip_class.name }} ({{ trip_class.start_time.strftime('%H:%M') }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="place_id">Place <span class="required">*</span></label>
+                    <select id="place_id" name="place_id" required class="form-input">
+                        <option value="">Select Place</option>
+                        <optgroup label="Boats">
+                            {% for place in places %}
+                                {% if place.is_boat %}
+                                    <option value="{{ place.id }}">{{ place.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="Shore Diving">
+                            {% for place in places %}
+                                {% if not place.is_boat %}
+                                    <option value="{{ place.id }}">{{ place.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Trip Name <span class="optional">(optional)</span></label>
+                    <input type="text" id="name" name="name" placeholder="Leave empty to use class name + date" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date <span class="required">*</span></label>
+                    <input type="date" id="date" name="date" 
+                           value="{{ selected_date.strftime('%Y-%m-%d') }}" 
+                           required class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="start_time">Start Time <span class="optional">(auto-filled from class)</span></label>
+                    <input type="time" id="start_time" name="start_time" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="max_divers">Max Divers</label>
+                    <input type="number" id="max_divers" name="max_divers" 
+                           value="14" min="1" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="assigned_staff">Assigned Staff</label>
+                    <input type="text" id="assigned_staff" name="assigned_staff" 
+                           placeholder="Staff names separated by commas" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="save-button">Create Trip</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<style>
+    .required {
+        color: #e74c3c;
+    }
+    .optional {
+        font-size: 0.85em;
+        color: #7f8c8d;
+        font-style: italic;
+    }
+</style>
+
+<script>
+    function updateStartTime() {
+        const selectElement = document.getElementById('trip_class_id');
+        const startTimeInput = document.getElementById('start_time');
+        
+        if (selectElement.value) {
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const defaultStartTime = selectedOption.getAttribute('data-start-time');
+            startTimeInput.value = defaultStartTime;
+        } else {
+            startTimeInput.value = '';
+        }
+    }
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStartTime();
+    });
+</script>
+{% endblock %}

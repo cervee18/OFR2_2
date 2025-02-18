@@ -40,7 +40,7 @@
                                     <td>{{ client.certification_level }}</td>
                                     <td>{{ client.last_dive_day }}</td>
                                     <td>
-                                        <a href="{{ url_for('trips_assign_client', trip_id=trip.id, client_id=client.id) }}" 
+                                        <a href="{{ url_for('trips.trips_assign_client', trip_id=trip.id, client_id=client.id) }}" 
                                            class="add-client-link">Add</a>
                                     </td>
                                 </tr>

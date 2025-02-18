@@ -11,19 +11,19 @@
         <div class="feature-card">
             <h3>Client Management</h3>
             <p>Efficiently manage your diving clients, their certifications, and equipment preferences.</p>
-            <a href="{{ url_for('clients') }}" class="feature-link">Manage Clients</a>
+            <a href="{{ url_for('clients.client_list') }}" class="feature-link">Manage Clients</a>
         </div>
 
         <div class="feature-card">
             <h3>Trip Scheduling</h3>
             <p>Organize and schedule diving trips with ease, track participants and equipment.</p>
-            <a href="{{ url_for('trips') }}" class="feature-link">View Schedule</a>
+            <a href="{{ url_for('trips.trip_list') }}" class="feature-link">View Schedule</a>
         </div>
 
         <div class="feature-card">
             <h3>Visit Tracking</h3>
             <p>Keep track of client visits, stays, and diving activities.</p>
-            <a href="{{ url_for('clients') }}" class="feature-link">Monitor Visits</a>
+            <a href="{{ url_for('clients.client_list') }}" class="feature-link">Monitor Visits</a>
         </div>
     </div>
 </section>

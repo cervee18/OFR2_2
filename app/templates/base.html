@@ -11,12 +11,12 @@
     <header class="main-header">
         <nav class="nav-container">
             <div class="logo">
-                <a href="{{ url_for('home') }}">Ocean Frontiers Manager</a>
+                <a href="{{ url_for('main.home') }}">Ocean Frontiers Manager</a>
             </div>
             <ul class="nav-links">
-                <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
-                <li><a href="{{ url_for('clients') }}" class="nav-link">Clients</a></li>
-                <li><a href="{{ url_for('trips') }}" class="nav-link">Trips</a></li>
+                <li><a href="{{ url_for('main.home') }}" class="nav-link">Home</a></li>
+                <li><a href="{{ url_for('clients.client_list') }}" class="nav-link">Clients</a></li>
+                <li><a href="{{ url_for('trips.trip_list') }}" class="nav-link">Trips</a></li>
             </ul>
         </nav>
     </header>
