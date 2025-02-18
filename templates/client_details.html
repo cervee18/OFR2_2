@@ -1,78 +1,115 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <section class="client-details">
-        <div class="client-details-header">
-            <h3>{{ client.name }} {{ client.surname }}</h3>
-            <form method="POST" action="{{ url_for('delete_client', client_id=client.id) }}" class="delete-form">
-                <button type="submit" onclick="return confirm('Are you sure you want to delete this client?')">Delete Client</button>
+<section class="client-details-container">
+    <div class="client-header">
+        <h2>{{ client.name }} {{ client.surname }}</h2>
+        <div class="header-actions">
+            <form method="POST" action="{{ url_for('delete_client', client_id=client.id) }}" class="delete-client-form">
+                <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to delete this client?')">Delete</button>
+            </form>
+            <a href="{{ url_for('clients') }}" class="back-button">Back</a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="content-grid">
+        <!-- Left Column: Client Information -->
+        <div class="client-info-section">
+            <form method="POST" action="{{ url_for('edit_client', client_id=client.id) }}" class="client-edit-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" name="name" value="{{ client.name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Surname</label>
+                        <input type="text" name="surname" value="{{ client.surname }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" value="{{ client.email }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" value="{{ client.phone }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Dive</label>
+                        <input type="date" name="last_dive_day" value="{{ client.last_dive_day.strftime('%Y-%m-%d') if client.last_dive_day else '' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cert. Number</label>
+                        <input type="text" name="certification_number" value="{{ client.certification_number }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Cert. Level</label>
+                        <input type="text" name="certification_level" value="{{ client.certification_level }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Nitrox Cert.</label>
+                        <input type="text" name="nitrox_certification_number" value="{{ client.nitrox_certification_number }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Address</label>
+                        <input type="text" name="address" value="{{ client.address }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Notes</label>
+                        <textarea name="notes" rows="2">{{ client.notes }}</textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-button">Save Changes</button>
+                </div>
             </form>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flashes">
-                {% for category, message in messages %}
-                  <li class="{{ category }} {{ message }}">{{ message }}</li>
-                {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-
-        <form method="POST" action="{{ url_for('edit_client', client_id=client.id) }}">
-            <div class="client-info">
-                <p><strong>Name:</strong> <input type="text" name="name" value="{{ client.name }}" required></p>
-                <p><strong>Surname:</strong> <input type="text" name="surname" value="{{ client.surname }}" required></p>
-                <p><strong>Email:</strong> <input type="email" name="email" value="{{ client.email }}"></p>
-                <p><strong>Phone:</strong> <input type="text" name="phone" value="{{ client.phone }}"></p>
-                <p><strong>Address:</strong> <input type="text" name="address" value="{{ client.address }}"></p>
-                <p><strong>Notes:</strong> <textarea name="notes">{{ client.notes }}</textarea></p>
-                <p><strong>Last Dive Day:</strong> <input type="date" name="last_dive_day" value="{{ client.last_dive_day.strftime('%Y-%m-%d') if client.last_dive_day else '' }}"></p>
-                <p><strong>Certification Number:</strong> <input type="text" name="certification_number" value="{{ client.certification_number }}"></p>
-                <p><strong>Certification Level:</strong> <input type="text" name="certification_level" value="{{ client.certification_level }}"></p>
-                <p><strong>Nitrox Certification Number:</strong> <input type="text" name="nitrox_certification_number" value="{{ client.nitrox_certification_number }}"></p>
+        <!-- Right Column: Visits -->
+        <div class="visits-section">
+            <div class="visits-header">
+                <h3>Visits</h3>
+                <a href="{{ url_for('edit_visit', client_id=client.id) }}" class="add-visit-button">Add Visit</a>
             </div>
-            <button type="submit">Save Changes</button>
-        </form>
-
-        <section class="client-visits">  <h3>Visits</h3>
-            <a href="{{ url_for('edit_visit', client_id=client.id) }}" class="add-visit-button">Add Visit</a>  {# Add Visit Button #}
-            {% if visits_data %}
-                {% for visit_item in visits_data %}
-                    {% set visit = visit_item.visit %}
-                    {% set leader = visit_item.leader_client %}
-                    {% set other_clients = visit_item.other_clients %}
-                    <div class="visit-block">
-                        <div class="visit-block-header">  <p><strong>Visit ID:</strong> {{ visit.id }}</p>
-                            <a href="{{ url_for('edit_visit', visit_id=visit.id, client_id=client.id) }}" class="edit-visit-button">Edit</a>  {# Edit Button #}
+            
+            <div class="visits-list">
+                {% if visits_data %}
+                    {% for visit_item in visits_data %}
+                        {% set visit = visit_item.visit %}
+                        {% set leader = visit_item.leader_client %}
+                        <div class="visit-item">
+                            <div class="visit-item-header">
+                                <span>{{ visit.start_date.strftime('%Y-%m-%d') }} - {{ visit.end_date.strftime('%Y-%m-%d') }}</span>
+                                <a href="{{ url_for('edit_visit', visit_id=visit.id, client_id=client.id) }}" class="edit-link">Edit</a>
+                            </div>
+                            <div class="visit-item-details">
+                                <span>{{ visit.place_of_stay }}</span>
+                                <span>Leader: {{ leader.name if leader else 'Unknown' }}</span>
+                            </div>
                         </div>
-                        <p><strong>Dates:</strong> {{ visit.start_date }} to {{ visit.end_date }}</p>
-                        <p><strong>Place of Stay:</strong> {{ visit.place_of_stay }}</p>
-                        <p><strong>Trips:</strong> <em>(Trips info will be here later)</em></p> <p><strong>Other Clients:</strong>
-                            {% if visit.client_ids %}
-                                <ul>
-                                {% for other_client in other_clients %}
-                                    <li><a href="{{ url_for('client_details', client_id=other_client.id) }}">{{ other_client.name }} {{ other_client.surname }}</a></li>
-                                {% endfor %}
-                                </ul>
-                            {% else %}
-                                <em>No other clients in this visit.</em>
-                            {% endif %}
-                        </p>
-                        <p><strong>Leader Client:</strong> {% if leader %}
-                                <a href="{{ url_for('client_details', client_id=leader.id) }}">{{ leader.name }} {{ leader.surname }}</a>
-                            {% else %}
-                                <em>Unknown Leader Client</em>
-                            {% endif %}
-                        </p>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No visits associated with this client.</p>
-            {% endif %}
-        </section>
-
-
-        <a href="{{ url_for('clients') }}">Back to Clients</a>
-    </section>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-visits">No visits recorded</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

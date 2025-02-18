@@ -1,58 +1,92 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <section class="clients">
-        <h2>Clients</h2>
-
+<section class="clients-container">
+    <div class="clients-header">
+        <h2>Client Management</h2>
+        
+        <!-- Enhanced Search Box -->
         <div class="search-box">
-            <form method="GET" action="{{ url_for('clients') }}">
-                <input type="text" name="search" placeholder="Search clients..." value="{{ search_term or '' }}">
-                <button type="submit">Search</button>
+            <form method="GET" action="{{ url_for('clients') }}" class="search-form">
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search by name, surname, or email..." 
+                    value="{{ search_term or '' }}"
+                    class="search-input"
+                >
+                <button type="submit" class="search-button">Search</button>
             </form>
         </div>
+    </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flashes">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
                 {% for category, message in messages %}
-                  <li class="{{ category }}">{{ message }}</li>
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
                 {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-        <h3>Client List</h3>
-        <table class="client-table">
+    <!-- Clients Table Section -->
+    <div class="clients-table-container">
+        <table class="clients-table">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Surname</th>
                     <th>Email</th>
+                    <th>Certification Level</th>
                 </tr>
             </thead>
             <tbody>
-                {% if clients %}  {# Check if clients list is not empty #}
+                {% if clients %}
                     {% for client in clients %}
-                    <tr>
-                        <td><a href="{{ url_for('client_details', client_id=client.id) }}">{{ client.name }}</a></td>
-                        <td>{{ client.surname }}</td>
-                        <td>{{ client.email }}</td>
-                    </tr>
+                        <tr class="client-row">
+                            <td>
+                                <a href="{{ url_for('client_details', client_id=client.id) }}" 
+                                   class="client-link">{{ client.name }}</a>
+                            </td>
+                            <td>{{ client.surname }}</td>
+                            <td>{{ client.email }}</td>
+                            <td>{{ client.certification_level or 'Not specified' }}</td>
+                        </tr>
                     {% endfor %}
-                {% else %} {# If clients list is empty #}
-                    <tr><td colspan="3">Perform a search to see clients.</td></tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="no-results">
+                            {% if search_term %}
+                                No clients found matching your search.
+                            {% else %}
+                                Perform a search to see clients.
+                            {% endif %}
+                        </td>
+                    </tr>
                 {% endif %}
             </tbody>
         </table>
+    </div>
 
+    <!-- Add New Client Section -->
+    <div class="add-client-section">
         <h3>Add New Client</h3>
-        <div class="add-client-form">
-            <form method="POST" action="{{ url_for('clients') }}">
-                <input type="text" name="name" placeholder="Name" required><br>
-                <input type="text" name="surname" placeholder="Surname" required><br>
-                <input type="email" name="email" placeholder="Email" required><br>
-                <button type="submit">Add Client</button>
-            </form>
-        </div>
-    </section>
+        <form method="POST" action="{{ url_for('clients') }}" class="add-client-form">
+            <div class="form-group">
+                <input type="text" name="name" placeholder="Name" required class="form-input">
+            </div>
+            <div class="form-group">
+                <input type="text" name="surname" placeholder="Surname" required class="form-input">
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Email" required class="form-input">
+            </div>
+            <button type="submit" class="submit-button">Add Client</button>
+        </form>
+    </div>
+</section>
 {% endblock %}

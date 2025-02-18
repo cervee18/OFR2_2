@@ -25,7 +25,7 @@ class Client(db.Model):
     certification_number = db.Column(db.String(50))
     certification_level = db.Column(db.String(50))
     nitrox_certification_number = db.Column(db.String(50))
-    # --- Many-to-Many Relationship with Visit ---
+    # --- Many-to-Many Relationship with Visit and Trips ---
     visits = db.relationship('Visit', secondary=client_visits_association)
     trips = db.relationship('Trip', secondary=clients_trips_association, back_populates='clients')
     def __repr__(self):
@@ -80,6 +80,7 @@ class TripClientEquipment(db.Model):
     wetsuit_size = db.Column(db.String(20))
     fins_size = db.Column(db.String(20))
     weights_amount = db.Column(db.Integer)
+    notes = db.Column(db.Text)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships

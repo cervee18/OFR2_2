@@ -426,34 +426,95 @@ def trips_assign_client(trip_id, client_id):
 def save_equipment(trip_id, client_id):
     try:
         data = request.json
-        equipment = TripClientEquipment.query.filter_by(
-            trip_id=trip_id, 
-            client_id=client_id
+        apply_to_future = data.get('applyToFuture', False)
+        
+        # Get current trip
+        current_trip = Trip.query.get_or_404(trip_id)
+        current_date = current_trip.date
+        
+        print(f"DEBUG: Saving equipment for trip_id={trip_id}, client_id={client_id}, date={current_date}")
+        print(f"DEBUG: Apply to future trips? {apply_to_future}")
+        
+        # Step 1: Update the current trip's equipment
+        current_equipment = TripClientEquipment.query.filter_by(
+            trip_id=trip_id, client_id=client_id
         ).first()
-
-        if not equipment:
-            # Create new equipment assignment
-            equipment = TripClientEquipment(
+        
+        if not current_equipment:
+            current_equipment = TripClientEquipment(
                 trip_id=trip_id,
                 client_id=client_id
             )
-            db.session.add(equipment)
-
+            db.session.add(current_equipment)
+            print(f"DEBUG: Created new equipment for trip_id={trip_id}")
+        else:
+            print(f"DEBUG: Updated existing equipment for trip_id={trip_id}")
+            
         # Update equipment fields
-        equipment.mask_size = data.get('mask_size')
-        equipment.bcd_size = data.get('bcd_size')
-        equipment.wetsuit_size = data.get('wetsuit_size')
-        equipment.fins_size = data.get('fins_size')
-        equipment.weights_amount = data.get('weights_amount')
-        equipment.updated_at = datetime.utcnow()
-
+        current_equipment.mask_size = data.get('mask_size')
+        current_equipment.bcd_size = data.get('bcd_size')
+        current_equipment.wetsuit_size = data.get('wetsuit_size')
+        current_equipment.fins_size = data.get('fins_size')
+        current_equipment.weights_amount = data.get('weights_amount')
+        current_equipment.notes = data.get('notes')
+        current_equipment.updated_at = datetime.utcnow()
+        
+        # Step 2: Update nitrox certification for client if needed
+        nitrox_value = data.get('nitrox')
+        if nitrox_value:
+            client = Client.query.get(client_id)
+            if client:
+                client.nitrox_certification_number = "YES" if nitrox_value == "yes" else None
+                print(f"DEBUG: Updated nitrox certification for client_id={client_id}")
+        
+        # Step 3: If requested, update future trips
+        if apply_to_future:
+            # Get all future trips that this client is part of
+            client_future_trips = db.session.query(Trip).join(
+                clients_trips_association,
+                Trip.id == clients_trips_association.c.trip_id
+            ).filter(
+                clients_trips_association.c.client_id == client_id,
+                Trip.date > current_date
+            ).all()
+            
+            print(f"DEBUG: Found {len(client_future_trips)} future trips for client_id={client_id}")
+            
+            for future_trip in client_future_trips:
+                print(f"DEBUG: Processing future trip_id={future_trip.id}, date={future_trip.date}")
+                
+                future_equipment = TripClientEquipment.query.filter_by(
+                    trip_id=future_trip.id,
+                    client_id=client_id
+                ).first()
+                
+                if not future_equipment:
+                    future_equipment = TripClientEquipment(
+                        trip_id=future_trip.id,
+                        client_id=client_id
+                    )
+                    db.session.add(future_equipment)
+                    print(f"DEBUG: Created new equipment for future trip_id={future_trip.id}")
+                else:
+                    print(f"DEBUG: Updating existing equipment for future trip_id={future_trip.id}")
+                
+                # Copy only equipment fields (not notes)
+                future_equipment.mask_size = data.get('mask_size')
+                future_equipment.bcd_size = data.get('bcd_size')
+                future_equipment.wetsuit_size = data.get('wetsuit_size')
+                future_equipment.fins_size = data.get('fins_size')
+                future_equipment.weights_amount = data.get('weights_amount')
+                future_equipment.updated_at = datetime.utcnow()
+                
         db.session.commit()
+        print(f"DEBUG: Successfully committed all changes")
         return jsonify({'success': True})
+        
     except Exception as e:
         db.session.rollback()
-        print(f"Error saving equipment: {str(e)}")
+        print(f"ERROR: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
-
+    
 @app.route("/trips/get_last_equipment/<int:client_id>")
 def get_last_equipment(client_id):
     try:

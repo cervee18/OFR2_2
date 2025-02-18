@@ -1,146 +1,193 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <section class="edit-visit">
-        <h2>{% if visit %}Edit Visit{% else %}Create New Visit{% endif %}</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
+<section class="edit-visit-container">
+    <div class="page-header">
+        <h2>{% if visit %}Edit Visit{% else %}New Visit{% endif %}</h2>
+        <a href="{{ url_for('client_details', client_id=leader_client_id) }}" class="back-button">Back</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <ul class="flashes">
-            {% for category, message in messages %}
-              <li class="{{ category }} {{ message }}">{{ message }}</li>
-            {% endfor %}
-            </ul>
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
         {% endif %}
     {% endwith %}
-    <form method="POST" action="{{ url_for('edit_visit', client_id=leader_client_id, visit_id=visit.id if visit else None) }}">
-        <div class="visit-form">
-            <p><strong>Start Date:</strong> <input type="date" name="start_date" value="{{ visit.start_date.strftime('%Y-%m-%d') if visit and visit.start_date else '' }}" required></p>
-            <p><strong>End Date:</strong> <input type="date" name="end_date" value="{{ visit.end_date.strftime('%Y-%m-%d') if visit and visit.end_date else '' }}" required></p>
-            <p><strong>Place of Stay:</strong> <input type="text" name="place_of_stay" value="{{ visit.place_of_stay if visit else '' }}" required></p>
+
+    <div class="visit-edit-grid">
+        <!-- Visit Details Form -->
+        <div class="visit-form-section">
+            <form method="POST" action="{{ url_for('edit_visit', client_id=leader_client_id, visit_id=visit.id if visit else None) }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" 
+                               value="{{ visit.start_date.strftime('%Y-%m-%d') if visit and visit.start_date else '' }}" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date" 
+                               value="{{ visit.end_date.strftime('%Y-%m-%d') if visit and visit.end_date else '' }}" 
+                               required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Place of Stay</label>
+                        <input type="text" name="place_of_stay" 
+                               value="{{ visit.place_of_stay if visit else '' }}" 
+                               required>
+                    </div>
+                </div>
+
+                <!-- Hidden field for selected clients -->
+                <input type="hidden" name="selected_client_ids" id="selectedClientIdsField" value="">
+
+                <div class="form-actions">
+                    <button type="submit" class="save-button">Save Visit</button>
+                    {% if visit %}
+                        <button type="button" class="delete-button" 
+                                onclick="if(confirm('Are you sure you want to delete this visit?')) { 
+                                    document.getElementById('delete-form').submit(); 
+                                }">
+                            Delete Visit
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+
+            {% if visit %}
+                <form id="delete-form" method="POST" 
+                      action="{{ url_for('delete_visit', client_id=leader_client_id, visit_id=visit.id) }}" 
+                      style="display: none;">
+                </form>
+            {% endif %}
         </div>
 
-            <div class="added-clients-list">
-                <h3>Clients Added to Visit</h3>
-                <ul id="addedClientsList">
-                    </ul>
-                <input type="hidden" name="selected_client_ids" id="selectedClientIdsField" value="">
+        <!-- Clients Selection Section -->
+        <div class="clients-selection-section">
+            <div class="search-box">
+                <input type="text" id="clientSearch" 
+                       placeholder="Search clients..." 
+                       class="search-input"
+                       onkeyup="searchClients()">
             </div>
 
-            <div class="client-search-box">
-                <h3>Search Clients to Add</h3>
-                <input type="text" id="clientSearch" onkeyup="searchClients()" placeholder="Search clients by name, surname, email...">
-                <table class="client-table" id="searchResultsTable">
-                    <thead>
+            <div class="clients-panels">
+                <div class="selected-clients-panel">
+                    <h3>Selected Clients</h3>
+                    <ul id="addedClientsList" class="clients-list"></ul>
+                </div>
+
+                <div class="search-results-panel">
+                    <h3>Search Results</h3>
+                    <div class="search-results-container">
+                        <table id="searchResultsTable" class="clients-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="searchResultsBody">
+                                <tr>
+                                    <td colspan="3" class="no-results">Search for clients to add</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    var allClients = {{ clients|tojson }};
+    var addedClients = {};
+
+    function searchClients() {
+        var input = document.getElementById("clientSearch");
+        var filter = input.value.toUpperCase();
+        var searchResultsBody = document.getElementById("searchResultsBody");
+        searchResultsBody.innerHTML = '';
+        var resultsFound = false;
+
+        if (filter !== "") {
+            allClients.forEach(client => {
+                if (addedClients[client.id]) return;
+
+                var searchText = `${client.name} ${client.surname} ${client.email}`.toUpperCase();
+                if (searchText.includes(filter)) {
+                    var row = `
                         <tr>
-                            <th>Name</th>
-                            <th>Surname</th>
-                            <th>Email</th>
-                            <th>Add</th>
-                        </tr>
-                    </thead>
-                    <tbody id="searchResultsBody">
-                        <tr><td colspan="4">Start searching to find clients to add.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <button type="submit">Save Visit</button>
-        </form>
-        {% if visit %} <form method="POST" action="{{ url_for('delete_visit', client_id=leader_client_id, visit_id=visit.id) }}" class="delete-form">
-            <button type="submit" onclick="return confirm('Are you sure you want to delete this visit?')">Delete Visit</button>
-        </form> {% endif %}
-
-        <a href="{{ url_for('client_details', client_id=leader_client_id) }}">Cancel</a>
-
-        <script>
-            var allClients = {{ clients|tojson }}; // Pass all clients data to JavaScript
-            var addedClients = {}; // Keep track of added clients by ID
-
-            function searchClients() {
-                var input, filter, searchResultsBody, tr, td, i, txtValue, client, rowHtml;
-                input = document.getElementById("clientSearch");
-                filter = input.value.toUpperCase();
-                searchResultsBody = document.getElementById("searchResultsBody");
-                searchResultsBody.innerHTML = ''; // Clear previous results
-                var resultsFound = false;
-
-                if (filter !== "") { // Only proceed if filter is not empty
-                    for (i = 0; i < allClients.length; i++) {
-                        client = allClients[i];
-                        if (addedClients[client.id]) continue; // Skip if already added
-
-                        var searchText = (client.name + " " + client.surname + " " + client.email).toUpperCase();
-                        if (searchText.indexOf(filter) > -1) { // Condition now only checks for filter match
-                            rowHtml = `<tr>
-                                <td>${client.name}</td>
-                                <td>${client.surname}</td>
-                                <td>${client.email}</td>
-                                <td><button onclick="addClientToVisit(${client.id}, '${client.name} ${client.surname}', '${client.email}')">Add</button></td>
-                            </tr>`;
-                            searchResultsBody.innerHTML += rowHtml;
-                            resultsFound = true;
-                        }
-                    }
-                    if (!resultsFound) {
-                        searchResultsBody.innerHTML = '<tr><td colspan="4">No clients found matching your search.</td></tr>';
-                    }
-                } else {
-                    searchResultsBody.innerHTML = '<tr><td colspan="4">Start searching to find clients to add.</td></tr>'; // Show "Start searching..." message when filter is empty
+                            <td>${client.name} ${client.surname}</td>
+                            <td>${client.email}</td>
+                            <td>
+                                <button onclick="addClientToVisit(${client.id}, '${client.name} ${client.surname}', '${client.email}')"
+                                        class="add-button">Add</button>
+                            </td>
+                        </tr>`;
+                    searchResultsBody.innerHTML += row;
+                    resultsFound = true;
                 }
+            });
+        }
+
+        if (!resultsFound) {
+            searchResultsBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="no-results">
+                        ${filter === "" ? "Search for clients to add" : "No matching clients found"}
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function addClientToVisit(clientId, clientName, clientEmail) {
+        if (addedClients[clientId]) return;
+
+        addedClients[clientId] = {name: clientName, email: clientEmail};
+        
+        var li = document.createElement("li");
+        li.className = "selected-client-item";
+        li.innerHTML = `
+            ${clientName}
+            <button onclick="removeClientFromVisit(${clientId})" class="remove-button">Remove</button>
+        `;
+        document.getElementById("addedClientsList").appendChild(li);
+        
+        document.getElementById("clientSearch").value = '';
+        searchClients();
+        updateSelectedClientIdsField();
+    }
+
+    function removeClientFromVisit(clientId) {
+        delete addedClients[clientId];
+        
+        var addedClientsList = document.getElementById("addedClientsList");
+        var items = addedClientsList.getElementsByClassName("selected-client-item");
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].innerHTML.includes(addedClients[clientId]?.name)) {
+                items[i].remove();
+                break;
             }
+        }
+        
+        searchClients();
+        updateSelectedClientIdsField();
+    }
 
-            // Initial search to show "Start searching..." message (call it once on page load)
-            searchClients();
+    function updateSelectedClientIdsField() {
+        document.getElementById("selectedClientIdsField").value = Object.keys(addedClients).join(',');
+    }
 
-
-            function addClientToVisit(clientId, clientName, clientEmail) {
-                if (addedClients[clientId]) return; // Prevent adding twice
-
-                addedClients[clientId] = {name: clientName, email: clientEmail}; // Add to added clients list
-
-                var addedClientsListUl = document.getElementById("addedClientsList");
-                var newLi = document.createElement("li");
-                newLi.textContent = clientName + " (" + clientEmail + ") ";
-                var removeButton = document.createElement("button");
-                removeButton.textContent = "Remove";
-                removeButton.onclick = function() { removeClientFromVisit(clientId); };
-                newLi.appendChild(removeButton);
-                addedClientsListUl.appendChild(newLi);
-
-                // Clear search results and reset search input, or just refresh search results
-                document.getElementById("clientSearch").value = '';
-                searchClients(); // Re-run search to update results (remove added client from search results)
-                updateSelectedClientIdsField();
-            }
-
-            function removeClientFromVisit(clientId) {
-                delete addedClients[clientId]; // Remove from added clients list
-                var addedClientsListUl = document.getElementById("addedClientsList");
-                // Re-render the added clients list to reflect removal (simplest way is to clear and rebuild)
-                addedClientsListUl.innerHTML = '';
-                for (var id in addedClients) {
-                    var client = addedClients[id];
-                    var newLi = document.createElement("li");
-                    newLi.textContent = client.name + " (" + client.email + ") ";
-                    var removeButton = document.createElement("button");
-                    removeButton.textContent = "Remove";
-                    removeButton.onclick = function() { removeClientFromVisit(id); };
-                    newLi.appendChild(removeButton);
-                    addedClientsListUl.appendChild(newLi);
-                }
-                updateSelectedClientIdsField();
-                searchClients(); // Re-run search to possibly re-add to search results if filter empty
-            }
-
-            function updateSelectedClientIdsField() {
-                var idsArray = Object.keys(addedClients);
-                document.getElementById("selectedClientIdsField").value = idsArray.join(',');
-            }
-
-            // Initial search to show "Start searching..." message
-            searchClients();
-
-        </script>
-
-    </section>
+    // Initialize search results
+    searchClients();
+</script>
 {% endblock %}

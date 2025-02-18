@@ -1,233 +1,364 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<section class="trips-page">
+<section class="trips-container">
+    <!-- Calendar & Navigation -->
+    <div class="calendar-section">
+        <div class="calendar-header">
+            <form method="GET" action="{{ url_for('trips') }}" class="calendar-nav" id="calendar-form">
+                <select name="month" id="month-selector" class="calendar-select">
+                    {% for month_num, month_name in months.items() %}
+                        <option value="{{ month_num }}" {% if selected_month == month_num|int %}selected{% endif %}>
+                            {{ month_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <select name="year" id="year-selector" class="calendar-select">
+                    {% for year_option in years %}
+                        <option value="{{ year_option }}" {% if selected_year == year_option|int %}selected{% endif %}>
+                            {{ year_option }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <a href="{{ url_for('trips', selected_trip_id=request.args.get('selected_trip_id')) }}" 
+                   class="today-button">Today</a>
+            </form>
+        </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <ul class="flashes">
-        {% for category, message in messages %}
-        <li class="{{ category }} {{ message }}">{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
-
-    <div class="trips-header">
-        <div class="calendar">  {# Calendar Container #}
-            <div class="calendar-header">
-                <form method="GET" action="{{ url_for('trips') }}" class="calendar-navigation" id="calendar-form">
-                    <select name="month" id="month-selector">
-                        {% for month_num, month_name in months.items() %}
-                        <option value="{{ month_num }}" {% if selected_month == month_num|int %}selected{% endif %}>{{ month_name }}</option>
-                        {% endfor %}
-                    </select>
-                    <select name="year" id="year-selector">
-                        {% for year_option in years %}
-                        <option value="{{ year_option }}" {% if selected_year == year_option|int %}selected{% endif %}>{{ year_option }}</option>
-                        {% endfor %}
-                    </select>
-                    <a href="{{ url_for('trips', selected_trip_id=request.args.get('selected_trip_id')) }}" class="today-button">Today</a>                </form>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set calendar_days = calendar.Calendar().monthdatescalendar(selected_year|int, selected_month|int) %}
-                    {% for week in calendar_days %}
+        <table class="calendar-table">
+            <thead>
+                <tr>
+                    <th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set calendar_days = calendar.Calendar().monthdatescalendar(selected_year|int, selected_month|int) %}
+                {% for week in calendar_days %}
                     <tr>
                         {% for day in week %}
-                        <td {% if day.strftime('%Y-%m-%d') == selected_date_str %}class="selected-day"{% endif %}
-                            {% if day.month != selected_month|int %}class="other-month-day"{% endif %}>
-                            <a href="{{ url_for('trips', year=selected_year, month=selected_month, date=day.strftime('%Y-%m-%d'), selected_trip_id=request.args.get('selected_trip_id')) }}">{{ day.day }}</a>                        </td>
+                            <td class="{% if day.strftime('%Y-%m-%d') == selected_date_str %}selected-day{% endif %}
+                                       {% if day.month != selected_month|int %}other-month{% endif %}">
+                                <a href="{{ url_for('trips', year=selected_year, month=selected_month, 
+                                         date=day.strftime('%Y-%m-%d'), 
+                                         selected_trip_id=request.args.get('selected_trip_id')) }}">
+                                    {{ day.day }}
+                                </a>
+                            </td>
                         {% endfor %}
                     </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="calendar-actions">
+            <a href="{{ url_for('edit_trip') }}" class="new-trip-button">Create New Trip</a>
         </div>
-        <a href="{{ url_for('edit_trip') }}" class="add-trip-button">Create New Trip</a>
     </div>
 
-    <section class="daily-trips">
-        <h3>Trips for {{ selected_date_str }}</h3>
-    
+    <!-- Daily Trips Section -->
+    <div class="daily-trips-section">
+        <h3 class="date-header">Trips for {{ selected_date_str }}</h3>
+        
         {% if trips %}
-        <div class="trips-tabs">
-            <div class="tabs-header">
-                {% for trip in trips %}
-                <button class="tab-button {% if selected_trip and selected_trip.id == trip.id %}active{% endif %}"
-                        onclick="window.location.href='{{ url_for('trips', year=selected_year, month=selected_month, date=selected_date_str, selected_trip_id=trip.id) }}'">
-                    <span class="trip-name">{{ trip.name }}</span>
-                    <span class="tab-details">{{ trip.trip_class }} - {{ trip.start_time }}</span>
-                </button>
-                {% endfor %}
-            </div>
-    
-            {% if selected_trip %}
-            <div class="tab-content">
-                <div class="trip-info-grid">
-                    <div class="info-item">
-                        <span class="label">Trip:</span>
-                        <span class="value">{{ selected_trip.name }} ({{ selected_trip.trip_class }})</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Time:</span>
-                        <span class="value">{{ selected_trip.start_time }} - {{ selected_trip.end_time }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="value">Max Divers: {{ selected_trip.max_divers }} | Staff: {{ selected_trip.needed_staff }}</span>
-                    </div>
+            <div class="trips-tabs">
+                <div class="tabs-list">
+                    {% for trip in trips %}
+                        <button class="tab-button {% if selected_trip and selected_trip.id == trip.id %}active{% endif %}"
+                                onclick="window.location.href='{{ url_for('trips', year=selected_year, 
+                                         month=selected_month, date=selected_date_str, selected_trip_id=trip.id) }}'">
+                            <span class="tab-title">{{ trip.name }}</span>
+                            <span class="tab-info">{{ trip.trip_class }} - {{ trip.start_time.strftime('%H:%M') if trip.start_time }}</span>
+                        </button>
+                    {% endfor %}
                 </div>
-    
-            </div>  
-            {% endif %} 
-    
-            <button class="add-client-button" onclick="openAddClientPopup()"
-                {% if not selected_trip %}disabled{% endif %} >  
-                Add Client
-            </button>
-    
-            {% if selected_trip %} 
-            <div class="client-table-container">
-                <table class="client-table table-common">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Certification</th>
-                            <th>Last Dive</th>
-                            <th>Mask</th>
-                            <th>BCD</th>
-                            <th>Wetsuit</th>
-                            <th>Fins</th>
-                            <th>Weights</th>
-                            <th>Nitrox Cert</th>
-                            <th>Notes</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if clients_on_trip %}
-                        {% for client in clients_on_trip %}
-                        {% set equipment = client.equipment_assignments|selectattr("trip_id", "eq", selected_trip.id)|first %}
-                        <tr data-client-id="{{ client.id }}" data-trip-id="{{ selected_trip.id }}">
-                            <td>{{ client.name }} {{ client.surname }}</td>
-                            <td>{{ client.certification_level }}</td>
-                            <td>{{ client.last_dive_day }}</td>
-                            <td>
-                                <select name="mask_size" class="equipment-select">
-                                    <option value="">-- Select --</option>
-                                    <option value="adult" {% if equipment and equipment.mask_size == 'adult' %}selected{% endif %}>Adult</option>
-                                    <option value="kid" {% if equipment and equipment.mask_size == 'kid' %}selected{% endif %}>Kid</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select name="bcd_size" class="equipment-select">
-                                    <option value="">-- Select --</option>
-                                    {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                                        <option value="{{ size }}" {% if equipment and equipment.bcd_size == size %}selected{% endif %}>{{ size }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="wetsuit_size" class="equipment-select">
-                                    <option value="">-- Select --</option>
-                                    {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                                        <option value="{{ size }}" {% if equipment and equipment.wetsuit_size == size %}selected{% endif %}>{{ size }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="fins_size" class="equipment-select">
-                                    <option value="">-- Select --</option>
-                                    {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
-                                        <option value="{{ size }}" {% if equipment and equipment.fins_size == size %}selected{% endif %}>{{ size }}</option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" name="weights_amount" class="equipment-input" 
-                                       value="{{ equipment.weights_amount if equipment and equipment.weights_amount else '' }}">
-                            </td>
-                            <td>{% if client.nitrox_certification_number %}Yes{% else %}No{% endif %}</td>
-                            <td>{{ client.notes }}</td>
-                            <td>
-                                <button type="button" class="save-equipment-btn" onclick="saveEquipment(this)">Save</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr><td colspan="11">No clients assigned to this trip yet.</td></tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+
+                {% if selected_trip %}
+                    <div class="trip-details">
+                        <div class="trip-info">
+                            <div class="info-row">
+                                <span>Trip: {{ selected_trip.name }} ({{ selected_trip.trip_class }})</span>
+                                <span>Time: {{ selected_trip.start_time.strftime('%H:%M') if selected_trip.start_time }} 
+                                      - {{ selected_trip.end_time.strftime('%H:%M') if selected_trip.end_time }}</span>
+                                <span>Max Divers: {{ selected_trip.max_divers }} | Staff: {{ selected_trip.needed_staff }}</span>
+                            </div>
+                        </div>
+
+                        <div class="participants-section">
+                            <div class="participants-header">
+                                <h4>Participants</h4>
+                                <div class="header-actions">
+                                    <button class="add-client-button" onclick="openAddClientPopup()"
+                                            {% if not selected_trip %}disabled{% endif %}>
+                                        Add Client
+                                    </button>
+                                    <button id="saveEquipmentButton" class="save-button" onclick="saveAllEquipment()" disabled>
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+
+                            <table class="participants-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Certification</th>
+                                        <th>Mask</th>
+                                        <th>BCD</th>
+                                        <th>Wetsuit</th>
+                                        <th>Fins</th>
+                                        <th>Weights</th>
+                                        <th>Nitrox</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if clients_on_trip %}
+                                        {% for client in clients_on_trip %}
+                                            {% set equipment = client.equipment_assignments|selectattr("trip_id", "eq", selected_trip.id)|first %}
+                                            <tr data-client-id="{{ client.id }}" 
+                                                data-trip-id="{{ selected_trip.id }}" 
+                                                <!-- Replace the data-original-data part in the tr element -->
+                                                <tr data-client-id="{{ client.id }}" 
+                                                    data-trip-id="{{ selected_trip.id }}" 
+                                                    data-original-data='{"mask_size":"{{ equipment.mask_size|default("") }}","bcd_size":"{{ equipment.bcd_size|default("") }}","wetsuit_size":"{{ equipment.wetsuit_size|default("") }}","fins_size":"{{ equipment.fins_size|default("") }}","weights_amount":"{{ equipment.weights_amount|default("") }}","nitrox":"{{ "yes" if client.nitrox_certification_number else "no" }}","notes":"{{ equipment.notes|default("") }}"}'>
+                                                <td>
+                                                    <a href="{{ url_for('client_details', client_id=client.id) }}" 
+                                                       class="client-name-link">
+                                                        {{ client.name }} {{ client.surname }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ client.certification_level }}</td>
+                                                <td>
+                                                    <select name="mask_size" class="equipment-select">
+                                                        <option value="">-</option>
+                                                        <option value="adult" {% if equipment and equipment.mask_size == 'adult' %}selected{% endif %}>Adult</option>
+                                                        <option value="kid" {% if equipment and equipment.mask_size == 'kid' %}selected{% endif %}>Kid</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select name="bcd_size" class="equipment-select">
+                                                        <option value="">-</option>
+                                                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                                                            <option value="{{ size }}" {% if equipment and equipment.bcd_size == size %}selected{% endif %}>{{ size }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select name="wetsuit_size" class="equipment-select">
+                                                        <option value="">-</option>
+                                                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                                                            <option value="{{ size }}" {% if equipment and equipment.wetsuit_size == size %}selected{% endif %}>{{ size }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <select name="fins_size" class="equipment-select">
+                                                        <option value="">-</option>
+                                                        {% for size in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                                                            <option value="{{ size }}" {% if equipment and equipment.fins_size == size %}selected{% endif %}>{{ size }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="number" name="weights_amount" class="equipment-input" 
+                                                           value="{{ equipment.weights_amount if equipment and equipment.weights_amount else '' }}"
+                                                           min="0" max="20">
+                                                </td>
+                                                <td>
+                                                    <select name="nitrox" class="equipment-select">
+                                                        <option value="no" {% if not client.nitrox_certification_number %}selected{% endif %}>No</option>
+                                                        <option value="yes" {% if client.nitrox_certification_number %}selected{% endif %}>Yes</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="trip_notes" class="notes-input"
+                                                           value="{{ equipment.notes if equipment and equipment.notes else '' }}"
+                                                           placeholder="Add notes...">
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="9" class="no-participants">No participants added yet</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
-            
-            <script>
-            function saveEquipment(btn) {
-                const row = btn.closest('tr');
-                const clientId = row.dataset.clientId;
-                const tripId = row.dataset.tripId;
-                
-                const equipmentData = {
-                    mask_size: row.querySelector('select[name="mask_size"]').value,
-                    bcd_size: row.querySelector('select[name="bcd_size"]').value,
-                    wetsuit_size: row.querySelector('select[name="wetsuit_size"]').value,
-                    fins_size: row.querySelector('select[name="fins_size"]').value,
-                    weights_amount: row.querySelector('input[name="weights_amount"]').value,
-                };
-            
-                // We'll need to create a route for this
-                fetch(`/trips/save_equipment/${tripId}/${clientId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(equipmentData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Equipment saved successfully');
-                    } else {
-                        alert('Error saving equipment');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error saving equipment');
-                });
-            }
-            </script>
-            {% endif %}
-    
-        </div>
         {% else %}
-        <p>No trips scheduled for this date.</p>
-        {% endif %} 
-    </section>
-
-    <script>
-        document.getElementById('month-selector').addEventListener('change', function() {
-            document.getElementById('calendar-form').submit();
-        });
-
-        document.getElementById('year-selector').addEventListener('change', function() {
-            document.getElementById('calendar-form').submit();
-        });
-
-        function openAddClientPopup() {
-        {% if selected_trip %}
-            var tripId = "{{ selected_trip.id }}"; 
-            var popupUrl = "{{ url_for('trips_add_clients', trip_id=selected_trip.id) }}"; 
-            window.open(popupUrl, "AddClientsPopup", "width=800,height=600,resizable=yes,scrollbars=yes"); 
-        {% else %}
-            alert("No trip selected. Please select a trip tab first."); // Inform user (optional, as button is disabled)
+            <p class="no-trips">No trips scheduled for this date</p>
         {% endif %}
-        }
-    </script>
+    </div>
 </section>
+
+<script>
+    document.getElementById('month-selector').addEventListener('change', function() {
+        document.getElementById('calendar-form').submit();
+    });
+
+    document.getElementById('year-selector').addEventListener('change', function() {
+        document.getElementById('calendar-form').submit();
+    });
+
+    function openAddClientPopup() {
+        {% if selected_trip %}
+            var popupUrl = "{{ url_for('trips_add_clients', trip_id=selected_trip.id) }}";
+            window.open(popupUrl, "AddClientsPopup", "width=600,height=400,resizable=yes,scrollbars=yes");
+        {% endif %}
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    console.log('Setting up event listeners');
+    // Add change event listeners to all equipment inputs
+    document.querySelectorAll('.equipment-select, .equipment-input, .notes-input').forEach(input => {
+        console.log('Adding listener to:', input);
+        input.addEventListener('change', function() {
+            console.log('Change event triggered');
+            const row = this.closest('tr');
+            markRowAsModified(row);
+        });
+    });
+});
+
+    function markRowAsModified(row) {
+    try {
+        const originalData = JSON.parse(row.dataset.originalData);
+        const currentData = getRowData(row);
+        
+        // Debug logging
+        console.log('Original Data:', originalData);
+        console.log('Current Data:', currentData);
+        
+        // Compare current values with original values
+        let isModified = false;
+        for (let key in currentData) {
+            if (String(currentData[key]) !== String(originalData[key])) {  // Convert to strings for comparison
+                console.log(`Modified field: ${key}, Original: ${originalData[key]}, Current: ${currentData[key]}`);
+                isModified = true;
+                break;
+            }
+        }
+
+        // Toggle modified class and enable/disable save button
+        if (isModified) {
+            row.classList.add('row-modified');
+        } else {
+            row.classList.remove('row-modified');
+        }
+        
+        // Enable save button if any row is modified
+        const saveButton = document.getElementById('saveEquipmentButton');
+        const hasModifiedRows = document.querySelector('.row-modified') !== null;
+        console.log('Has modified rows:', hasModifiedRows);
+        saveButton.disabled = !hasModifiedRows;
+    } catch (error) {
+        console.error('Error in markRowAsModified:', error);
+    }
+}
+
+function getRowData(row) {
+    return {
+        mask_size: row.querySelector('select[name="mask_size"]').value || '',
+        bcd_size: row.querySelector('select[name="bcd_size"]').value || '',
+        wetsuit_size: row.querySelector('select[name="wetsuit_size"]').value || '',
+        fins_size: row.querySelector('select[name="fins_size"]').value || '',
+        weights_amount: row.querySelector('input[name="weights_amount"]').value || '',
+        nitrox: row.querySelector('select[name="nitrox"]').value || 'no',
+        notes: row.querySelector('input[name="trip_notes"]').value || ''
+    };
+}
+
+function saveAllEquipment() {
+    const modifiedRows = document.querySelectorAll('.row-modified');
+    const saveButton = document.getElementById('saveEquipmentButton');
+    
+    if (modifiedRows.length === 0) {
+        console.log("No modified rows found");
+        return;
+    }
+    
+    saveButton.disabled = true;
+    saveButton.textContent = 'Saving...';
+    console.log(`Saving ${modifiedRows.length} modified rows`);
+    
+    const savePromises = Array.from(modifiedRows).map(async row => {
+        try {
+            const clientId = row.dataset.clientId;
+            const tripId = row.dataset.tripId;
+            console.log(`Processing row for client ${clientId} on trip ${tripId}`);
+            
+            const equipmentData = getRowData(row);
+            
+            // Check if equipment fields were modified
+            const originalData = JSON.parse(row.dataset.originalData);
+            const hasEquipmentChanges = hasEquipmentFieldsChanged(equipmentData, originalData);
+            
+            if (hasEquipmentChanges) {
+                console.log(`Equipment changes detected for client ${clientId}`);
+                const confirmResult = await showConfirmDialog(
+                    "Apply to future trips?",
+                    "Do you want to apply equipment changes to future trips for this client?"
+                );
+                equipmentData.applyToFuture = confirmResult;
+                console.log(`User chose to ${confirmResult ? 'apply' : 'not apply'} changes to future trips`);
+            } else {
+                equipmentData.applyToFuture = false;
+                console.log(`No equipment changes detected, only updating current trip`);
+            }
+            
+            // Send the update request
+            const response = await fetch(`/trips/save_equipment/${tripId}/${clientId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(equipmentData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log(`Successfully saved changes for client ${clientId}`);
+                // Update the original data to match current state
+                row.dataset.originalData = JSON.stringify(equipmentData);
+                row.classList.remove('row-modified');
+                return true;
+            } else {
+                console.error(`Failed to save changes for client ${clientId}:`, result.error);
+                return false;
+            }
+        } catch (error) {
+            console.error(`Error processing row:`, error);
+            return false;
+        }
+    });
+
+    Promise.all(savePromises).then(results => {
+        const successCount = results.filter(Boolean).length;
+        
+        if (successCount === modifiedRows.length) {
+            saveButton.textContent = 'All Changes Saved!';
+            setTimeout(() => {
+                saveButton.textContent = 'Save Changes';
+                saveButton.disabled = true;
+            }, 2000);
+        } else {
+            saveButton.textContent = `Error: ${successCount}/${modifiedRows.length} Saved`;
+            saveButton.disabled = false;
+        }
+    });
+}
+
+function hasEquipmentFieldsChanged(current, original) {
+    const equipmentFields = ['mask_size', 'bcd_size', 'wetsuit_size', 'fins_size', 'weights_amount'];
+    return equipmentFields.some(field => current[field] !== original[field]);
+}
+
+function showConfirmDialog(title, message) {
+    return new Promise(resolve => {
+        resolve(confirm(message));
+    });
+}
+</script>
 {% endblock %}

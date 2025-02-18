@@ -1,65 +1,70 @@
-{# templates/add_clients_to_trip.html (Enhanced Content) #}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Add Clients to Trip</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> <!- Link to your CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="popup-body">
+    <div class="popup-container">
+        <div class="popup-header">
+            <h2>Add Clients to Trip: {{ trip.name }}</h2>
+            <p class="trip-info">{{ trip.trip_class }} - {{ trip.date.strftime('%Y-%m-%d') }}</p>
+        </div>
+
+        <div class="popup-content">
+            <div class="search-section">
+                <form method="GET" action="" class="search-form">
+                    <input type="text" name="search" 
+                           placeholder="Search by name or email" 
+                           value="{{ search_term or '' }}" 
+                           class="search-input">
+                    <button type="submit" class="search-button">Search</button>
+                </form>
+            </div>
+
+            <div class="clients-results">
+                {% if clients_list %}
+                    <table class="clients-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Certification</th>
+                                <th>Last Dive</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for client in clients_list %}
+                                <tr>
+                                    <td>{{ client.name }} {{ client.surname }}</td>
+                                    <td>{{ client.certification_level }}</td>
+                                    <td>{{ client.last_dive_day }}</td>
+                                    <td>
+                                        <a href="{{ url_for('trips_assign_client', trip_id=trip.id, client_id=client.id) }}" 
+                                           class="add-client-link">Add</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% elif search_term %}
+                    <p class="no-results">No clients found matching your search.</p>
+                {% else %}
+                    <p class="no-results">Search for clients to add to this trip.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="popup-footer">
+            <button onclick="closePopupAndRefreshParent()" class="close-button">Close</button>
+        </div>
+    </div>
+
     <script>
         function closePopupAndRefreshParent() {
-            window.opener.location.reload(); // Reload the parent window (trips page)
-            window.close(); // Close the pop-up window
+            window.opener.location.reload();
+            window.close();
         }
     </script>
-</head>
-<body>
-    <div class="popup-container"> <!- Container for popup styling -->
-    <h2>Add Clients to Trip: {{ trip.name }} ({{ trip.trip_class }})</h2>
-
-    <div class="client-search-form">
-        <form method="GET" action=""> 
-            <input type="text" name="search" placeholder="Search clients by name, surname, email" value="{{ search_term or '' }}"> 
-            <button type="submit">Search</button>
-        </form>
-    </div>
-
-    <div class="client-search-results">
-        {% if clients_list %}
-        <table class="client-table table-common"> <!- Use your common table style -->
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Certification</th>
-                    <th>Last Dive</th>
-                    <th>Actions</th> <!- "Add" action column -->
-                </tr>
-            </thead>
-            <tbody>
-                {% for client in clients_list %}
-                <tr>
-                    <td>{{ client.name }} {{ client.surname }}</td>
-                    <td>{{ client.certification_level }}</td>
-                    <td>{{ client.last_dive_day }}</td>
-                    <td>
-                        <a href="{{ url_for('trips_assign_client', trip_id=trip.id, client_id=client.id) }}" class="add-client-link">Add</a> 
-                        <!- Link to add client route -->
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% elif search_term %}
-            <p>No clients found matching your search term.</p>
-        {% else %}
-            <p>Search for clients to add to this trip.</p>
-        {% endif %}
-    </div>
-
-    <div class="popup-actions">
-        <button onclick="closePopupAndRefreshParent()">Close</button> 
-    </div>
-    </div> <!- Closing popup-container -->
-
-
-    
 </body>
 </html>

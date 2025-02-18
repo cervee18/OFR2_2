@@ -3,22 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dive Center Management</title>
+    <title>Ocean Frontiers Manager - Diving Center Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>OFR2 - Diving Center Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-    <nav>
-        <ul>
-            <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a href="{{ url_for('clients') }}">Clients</a></li>
-            <li><a href="{{ url_for('trips') }}">Trips Schedule</a></li>  {# --- ADDED TRIPS LINK HERE --- #}
-        </ul>
-    </nav>
-    <div class="container">
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo">
+                <a href="{{ url_for('home') }}">Ocean Frontiers Manager</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('home') }}" class="nav-link">Home</a></li>
+                <li><a href="{{ url_for('clients') }}" class="nav-link">Clients</a></li>
+                <li><a href="{{ url_for('trips') }}" class="nav-link">Trips</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content">
         {% block content %}{% endblock %}
-    </div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2025 Ocean Frontiers Manager. All rights reserved.</p>
+    </footer>
 </body>
 </html>
