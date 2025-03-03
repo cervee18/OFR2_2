@@ -119,7 +119,65 @@ def create_fake_clients(db, num_clients):
         return True
     return False
 
-def populate_debug_data(db, num_clients=100):
+def populate_staff(db):
+    """Populate Staff table with initial debug data if empty"""
+    from app.models.models import Staff
+    
+    if Staff.query.first() is None:
+        staff_members = [
+            {"name": "John", "surname": "Smith", "initials": "JS"},
+            {"name": "Emma", "surname": "Johnson", "initials": "EJ"},
+            {"name": "Michael", "surname": "Davis", "initials": "MD"},
+            {"name": "Laura", "surname": "Wilson", "initials": "LW"},
+            {"name": "Robert", "surname": "Brown", "initials": "RB"},
+            {"name": "Sarah", "surname": "Miller", "initials": "SM"},
+        ]
+        
+        for staff_data in staff_members:
+            staff = Staff(
+                staff_name=staff_data["name"],
+                staff_surname=staff_data["surname"],
+                staff_initials=staff_data["initials"]
+            )
+            db.session.add(staff)
+        
+        print("Debug data added: Staff Members")
+        return True
+    return False
+
+def create_fake_staff(db, num_staff):
+    """Create specified number of fake staff members"""
+    from app.models.models import Staff
+    import random
+    from faker import Faker
+    fake = Faker()
+    
+    data_added = False
+    for _ in range(num_staff):
+        name = fake.first_name()
+        surname = fake.last_name()
+        # Generate initials from the first letter of first name and last name
+        initials = f"{name[0]}{surname[0]}"
+        
+        # Check if initials already exist, append a number if they do
+        existing_initials = [s.staff_initials for s in Staff.query.all()]
+        if initials in existing_initials:
+            initials = f"{initials}{random.randint(1, 9)}"
+        
+        staff = Staff(
+            staff_name=name,
+            staff_surname=surname,
+            staff_initials=initials
+        )
+        db.session.add(staff)
+        data_added = True
+    
+    if data_added:
+        print(f"Debug data added: {num_staff} fake staff members")
+    
+    return data_added
+
+def populate_debug_data(db, num_clients=100, num_staff=10):
     """
     Main function to populate all tables with debug data if they are empty
     Returns True if any data was added, False if all tables were already populated
@@ -130,6 +188,8 @@ def populate_debug_data(db, num_clients=100):
         # Try to populate each table
         data_added |= populate_trip_classes(db)
         data_added |= populate_places(db)
+        data_added |= populate_staff(db)  # Add predefined staff
+        data_added |= create_fake_staff(db, num_staff)  # Add random staff
         data_added |= create_fake_clients(db, num_clients)
         
         # Always try to add specific clients

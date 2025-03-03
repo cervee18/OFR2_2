@@ -65,7 +65,6 @@ class Trip(db.Model):
 
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    staff_id = db.Column(db.Integer, unique=True, nullable=False)
     staff_name = db.Column(db.String(100), nullable=False)
     staff_surname = db.Column(db.String(100), nullable=False)
     staff_initials = db.Column(db.String(10), nullable=False)
