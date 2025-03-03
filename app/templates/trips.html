@@ -2,7 +2,7 @@
 
 {% block content %}
 <section class="trips-container">
-    <!-- Calendar & Navigation -->
+    <!-- Calendar & Navigation Section Remains Unchanged -->
     <div class="calendar-section">
         <div class="calendar-header">
             <form method="GET" action="{{ url_for('trips.trip_list') }}" class="calendar-nav" id="calendar-form">
@@ -55,7 +55,7 @@
         </div>
     </div>
 
-    <!-- Daily Trips Section -->
+    <!-- Daily Trips Section with Modified Participants Table -->
     <div class="daily-trips-section">
         <h3 class="date-header">Trips for {{ selected_date_str }}</h3>
         
@@ -85,14 +85,14 @@
 
                         <div class="participants-section">
                             <div class="participants-header">
-                                <h4>Participants</h4>
+                                <h4>Participants <span>{{ clients_on_trip|length }}/{{ selected_trip.max_divers }}</span></h4>
                                 <div class="header-actions">
                                     <button class="add-client-button" onclick="openAddClientPopup()"
                                             {% if not selected_trip %}disabled{% endif %}>
-                                        Add Client
+                                        + Add
                                     </button>
                                     <button id="saveEquipmentButton" class="save-button" onclick="saveAllEquipment()" disabled>
-                                        Save Changes
+                                        Save
                                     </button>
                                 </div>
                             </div>
@@ -100,24 +100,30 @@
                             <table class="participants-table">
                                 <thead>
                                     <tr>
+                                        <th>#</th>
                                         <th>Name</th>
-                                        <th>Certification</th>
+                                        <th>Cert</th>
                                         <th>Mask</th>
                                         <th>BCD</th>
-                                        <th>Wetsuit</th>
+                                        <th>Suit</th>
                                         <th>Fins</th>
-                                        <th>Weights</th>
-                                        <th>Nitrox</th>
+                                        <th>Wt</th>
+                                        <th>Nit</th>
                                         <th>Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% if clients_on_trip %}
-                                        {% for client in clients_on_trip %}
+                                    {% set max_slots = selected_trip.max_divers|default(14) %}
+                                    {% for slot in range(1, max_slots + 1) %}
+                                        {% set client = clients_on_trip[slot-1] if slot <= clients_on_trip|length else None %}
+                                        {% if client %}
                                             {% set equipment = client.equipment_assignments|selectattr("trip_id", "eq", selected_trip.id)|first %}
                                             <tr data-client-id="{{ client.id }}" 
                                                 data-trip-id="{{ selected_trip.id }}" 
+                                                data-slot="{{ slot }}"
+                                                class="filled-slot"
                                                 data-original-data='{"mask_size":"{{ equipment.mask_size|default("") }}","bcd_size":"{{ equipment.bcd_size|default("") }}","wetsuit_size":"{{ equipment.wetsuit_size|default("") }}","fins_size":"{{ equipment.fins_size|default("") }}","weights_amount":"{{ equipment.weights_amount|default("") }}","nitrox":"{{ "yes" if client.nitrox_certification_number else "no" }}","notes":"{{ equipment.notes|default("") }}"}'>
+                                                <td>{{ slot }}</td>
                                                 <td>
                                                     <a href="{{ url_for('clients.client_details', client_id=client.id) }}" 
                                                        class="client-name-link">
@@ -173,12 +179,17 @@
                                                            placeholder="Add notes...">
                                                 </td>
                                             </tr>
-                                        {% endfor %}
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="9" class="no-participants">No participants added yet</td>
-                                        </tr>
-                                    {% endif %}
+                                        {% else %}
+                                            <tr class="empty-slot">
+                                                <td>{{ slot }}</td>
+                                                <td colspan="9" class="add-client-cell">
+                                                    <button class="add-client-button-inline" onclick="openAddClientPopup()">
+                                                        + Add to Slot {{ slot }}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -208,154 +219,154 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-    console.log('Setting up event listeners');
-    // Add change event listeners to all equipment inputs
-    document.querySelectorAll('.equipment-select, .equipment-input, .notes-input').forEach(input => {
-        console.log('Adding listener to:', input);
-        input.addEventListener('change', function() {
-            console.log('Change event triggered');
-            const row = this.closest('tr');
-            markRowAsModified(row);
+        console.log('Setting up event listeners');
+        // Add change event listeners to all equipment inputs
+        document.querySelectorAll('.equipment-select, .equipment-input, .notes-input').forEach(input => {
+            console.log('Adding listener to:', input);
+            input.addEventListener('change', function() {
+                console.log('Change event triggered');
+                const row = this.closest('tr');
+                markRowAsModified(row);
+            });
         });
     });
-});
 
     function markRowAsModified(row) {
-    try {
-        const originalData = JSON.parse(row.dataset.originalData);
-        const currentData = getRowData(row);
-        
-        // Debug logging
-        console.log('Original Data:', originalData);
-        console.log('Current Data:', currentData);
-        
-        // Compare current values with original values
-        let isModified = false;
-        for (let key in currentData) {
-            if (String(currentData[key]) !== String(originalData[key])) {  // Convert to strings for comparison
-                console.log(`Modified field: ${key}, Original: ${originalData[key]}, Current: ${currentData[key]}`);
-                isModified = true;
-                break;
-            }
-        }
-
-        // Toggle modified class and enable/disable save button
-        if (isModified) {
-            row.classList.add('row-modified');
-        } else {
-            row.classList.remove('row-modified');
-        }
-        
-        // Enable save button if any row is modified
-        const saveButton = document.getElementById('saveEquipmentButton');
-        const hasModifiedRows = document.querySelector('.row-modified') !== null;
-        console.log('Has modified rows:', hasModifiedRows);
-        saveButton.disabled = !hasModifiedRows;
-    } catch (error) {
-        console.error('Error in markRowAsModified:', error);
-    }
-}
-
-function getRowData(row) {
-    return {
-        mask_size: row.querySelector('select[name="mask_size"]').value || '',
-        bcd_size: row.querySelector('select[name="bcd_size"]').value || '',
-        wetsuit_size: row.querySelector('select[name="wetsuit_size"]').value || '',
-        fins_size: row.querySelector('select[name="fins_size"]').value || '',
-        weights_amount: row.querySelector('input[name="weights_amount"]').value || '',
-        nitrox: row.querySelector('select[name="nitrox"]').value || 'no',
-        notes: row.querySelector('input[name="trip_notes"]').value || ''
-    };
-}
-
-function saveAllEquipment() {
-    const modifiedRows = document.querySelectorAll('.row-modified');
-    const saveButton = document.getElementById('saveEquipmentButton');
-    
-    if (modifiedRows.length === 0) {
-        console.log("No modified rows found");
-        return;
-    }
-    
-    saveButton.disabled = true;
-    saveButton.textContent = 'Saving...';
-    console.log(`Saving ${modifiedRows.length} modified rows`);
-    
-    const savePromises = Array.from(modifiedRows).map(async row => {
         try {
-            const clientId = row.dataset.clientId;
-            const tripId = row.dataset.tripId;
-            console.log(`Processing row for client ${clientId} on trip ${tripId}`);
-            
-            const equipmentData = getRowData(row);
-            
-            // Check if equipment fields were modified
             const originalData = JSON.parse(row.dataset.originalData);
-            const hasEquipmentChanges = hasEquipmentFieldsChanged(equipmentData, originalData);
+            const currentData = getRowData(row);
             
-            if (hasEquipmentChanges) {
-                console.log(`Equipment changes detected for client ${clientId}`);
-                const confirmResult = await showConfirmDialog(
-                    "Apply to future trips?",
-                    "Do you want to apply equipment changes to future trips for this client?"
-                );
-                equipmentData.applyToFuture = confirmResult;
-                console.log(`User chose to ${confirmResult ? 'apply' : 'not apply'} changes to future trips`);
+            // Debug logging
+            console.log('Original Data:', originalData);
+            console.log('Current Data:', currentData);
+            
+            // Compare current values with original values
+            let isModified = false;
+            for (let key in currentData) {
+                if (String(currentData[key]) !== String(originalData[key])) {  // Convert to strings for comparison
+                    console.log(`Modified field: ${key}, Original: ${originalData[key]}, Current: ${currentData[key]}`);
+                    isModified = true;
+                    break;
+                }
+            }
+
+            // Toggle modified class and enable/disable save button
+            if (isModified) {
+                row.classList.add('row-modified');
             } else {
-                equipmentData.applyToFuture = false;
-                console.log(`No equipment changes detected, only updating current trip`);
+                row.classList.remove('row-modified');
             }
             
-            // Send the update request
-            const response = await fetch(`/trips/save_equipment/${tripId}/${clientId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(equipmentData)
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                console.log(`Successfully saved changes for client ${clientId}`);
-                // Update the original data to match current state
-                row.dataset.originalData = JSON.stringify(equipmentData);
-                row.classList.remove('row-modified');
-                return true;
-            } else {
-                console.error(`Failed to save changes for client ${clientId}:`, result.error);
+            // Enable save button if any row is modified
+            const saveButton = document.getElementById('saveEquipmentButton');
+            const hasModifiedRows = document.querySelector('.row-modified') !== null;
+            console.log('Has modified rows:', hasModifiedRows);
+            saveButton.disabled = !hasModifiedRows;
+        } catch (error) {
+            console.error('Error in markRowAsModified:', error);
+        }
+    }
+
+    function getRowData(row) {
+        return {
+            mask_size: row.querySelector('select[name="mask_size"]')?.value || '',
+            bcd_size: row.querySelector('select[name="bcd_size"]')?.value || '',
+            wetsuit_size: row.querySelector('select[name="wetsuit_size"]')?.value || '',
+            fins_size: row.querySelector('select[name="fins_size"]')?.value || '',
+            weights_amount: row.querySelector('input[name="weights_amount"]')?.value || '',
+            nitrox: row.querySelector('select[name="nitrox"]')?.value || 'no',
+            notes: row.querySelector('input[name="trip_notes"]')?.value || ''
+        };
+    }
+
+    function saveAllEquipment() {
+        const modifiedRows = document.querySelectorAll('.row-modified');
+        const saveButton = document.getElementById('saveEquipmentButton');
+        
+        if (modifiedRows.length === 0) {
+            console.log("No modified rows found");
+            return;
+        }
+        
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+        console.log(`Saving ${modifiedRows.length} modified rows`);
+        
+        const savePromises = Array.from(modifiedRows).map(async row => {
+            try {
+                const clientId = row.dataset.clientId;
+                const tripId = row.dataset.tripId;
+                console.log(`Processing row for client ${clientId} on trip ${tripId}`);
+                
+                const equipmentData = getRowData(row);
+                
+                // Check if equipment fields were modified
+                const originalData = JSON.parse(row.dataset.originalData);
+                const hasEquipmentChanges = hasEquipmentFieldsChanged(equipmentData, originalData);
+                
+                if (hasEquipmentChanges) {
+                    console.log(`Equipment changes detected for client ${clientId}`);
+                    const confirmResult = await showConfirmDialog(
+                        "Apply to future trips?",
+                        "Do you want to apply equipment changes to future trips for this client?"
+                    );
+                    equipmentData.applyToFuture = confirmResult;
+                    console.log(`User chose to ${confirmResult ? 'apply' : 'not apply'} changes to future trips`);
+                } else {
+                    equipmentData.applyToFuture = false;
+                    console.log(`No equipment changes detected, only updating current trip`);
+                }
+                
+                // Send the update request
+                const response = await fetch(`/trips/save_equipment/${tripId}/${clientId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(equipmentData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`Successfully saved changes for client ${clientId}`);
+                    // Update the original data to match current state
+                    row.dataset.originalData = JSON.stringify(equipmentData);
+                    row.classList.remove('row-modified');
+                    return true;
+                } else {
+                    console.error(`Failed to save changes for client ${clientId}:`, result.error);
+                    return false;
+                }
+            } catch (error) {
+                console.error(`Error processing row:`, error);
                 return false;
             }
-        } catch (error) {
-            console.error(`Error processing row:`, error);
-            return false;
-        }
-    });
+        });
 
-    Promise.all(savePromises).then(results => {
-        const successCount = results.filter(Boolean).length;
-        
-        if (successCount === modifiedRows.length) {
-            saveButton.textContent = 'All Changes Saved!';
-            setTimeout(() => {
-                saveButton.textContent = 'Save Changes';
-                saveButton.disabled = true;
-            }, 2000);
-        } else {
-            saveButton.textContent = `Error: ${successCount}/${modifiedRows.length} Saved`;
-            saveButton.disabled = false;
-        }
-    });
-}
+        Promise.all(savePromises).then(results => {
+            const successCount = results.filter(Boolean).length;
+            
+            if (successCount === modifiedRows.length) {
+                saveButton.textContent = 'All Changes Saved!';
+                setTimeout(() => {
+                    saveButton.textContent = 'Save Changes';
+                    saveButton.disabled = true;
+                }, 2000);
+            } else {
+                saveButton.textContent = `Error: ${successCount}/${modifiedRows.length} Saved`;
+                saveButton.disabled = false;
+            }
+        });
+    }
 
-function hasEquipmentFieldsChanged(current, original) {
-    const equipmentFields = ['mask_size', 'bcd_size', 'wetsuit_size', 'fins_size', 'weights_amount'];
-    return equipmentFields.some(field => current[field] !== original[field]);
-}
+    function hasEquipmentFieldsChanged(current, original) {
+        const equipmentFields = ['mask_size', 'bcd_size', 'wetsuit_size', 'fins_size', 'weights_amount'];
+        return equipmentFields.some(field => current[field] !== original[field]);
+    }
 
-function showConfirmDialog(title, message) {
-    return new Promise(resolve => {
-        resolve(confirm(message));
-    });
-}
+    function showConfirmDialog(title, message) {
+        return new Promise(resolve => {
+            resolve(confirm(message));
+        });
+    }
 </script>
 {% endblock %}

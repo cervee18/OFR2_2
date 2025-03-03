@@ -2011,3 +2011,215 @@ body {
     border: 1px solid #f5c6cb;
     color: #721c24;
 }
+
+/* New styles for the participants table with fixed rows */
+
+/* Add a "Slot" column style */
+.participants-table th:first-child,
+.participants-table td:first-child {
+    width: 40px;
+    text-align: center;
+    background-color: #f0f0f0;
+    font-weight: 500;
+}
+
+/* Style for empty slots */
+.empty-slot {
+    background-color: #f8f8f8;
+    height: 50px;
+}
+
+.empty-slot td {
+    border: 1px dashed #ccc;
+    text-align: center;
+}
+
+.add-client-cell {
+    text-align: center;
+}
+
+/* Style for the inline add client button */
+.add-client-button-inline {
+    padding: 6px 10px;
+    background-color: #e6f7f7;
+    border: 1px dashed var(--light-turquoise);
+    border-radius: 4px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.add-client-button-inline:hover {
+    background-color: var(--light-turquoise);
+}
+
+/* Highlight filled slots to distinguish them better */
+.filled-slot {
+    background-color: white;
+}
+
+/* Update to the existing participant counter in the header */
+.participants-header h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.participants-header h4 span {
+    background-color: var(--light-turquoise);
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-left: 5px;
+    font-size: 0.9rem;
+}
+
+/* Make the table more compact */
+.participants-table th,
+.participants-table td {
+    padding: 6px;
+    font-size: 0.9rem;
+}
+
+/* New styles for the participants table with fixed rows - Compact Version */
+
+/* Add a "Slot" column style */
+.participants-table th:first-child,
+.participants-table td:first-child {
+    width: 30px;
+    text-align: center;
+    background-color: #f0f0f0;
+    font-weight: 500;
+    font-size: 0.7rem;
+}
+
+/* Style for empty slots */
+.empty-slot {
+    background-color: #f8f8f8;
+    height: 32px; /* Reduced from 50px */
+}
+
+.empty-slot td {
+    border: 1px dashed #ccc;
+    text-align: center;
+}
+
+.add-client-cell {
+    text-align: center;
+}
+
+/* Style for the inline add client button */
+.add-client-button-inline {
+    padding: 3px 6px; /* Reduced from 6px 10px */
+    background-color: #e6f7f7;
+    border: 1px dashed var(--light-turquoise);
+    border-radius: 3px; /* Reduced from 4px */
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.7rem; /* Reduced from 0.85rem */
+    transition: all 0.2s ease;
+}
+
+.add-client-button-inline:hover {
+    background-color: var(--light-turquoise);
+}
+
+/* Highlight filled slots to distinguish them better */
+.filled-slot {
+    background-color: white;
+    height: 32px; /* Consistent with empty slots */
+}
+
+/* Update to the existing participant counter in the header */
+.participants-header h4 {
+    margin: 0;
+    font-size: 0.85rem; /* Reduced from 1rem */
+}
+
+.participants-header h4 span {
+    background-color: var(--light-turquoise);
+    padding: 2px 4px; /* Reduced from 3px 6px */
+    border-radius: 3px; /* Reduced from 4px */
+    margin-left: 3px; /* Reduced from 5px */
+    font-size: 0.75rem; /* Reduced from 0.9rem */
+}
+
+/* Make the table more compact */
+.participants-table th,
+.participants-table td {
+    padding: 3px 4px; /* Reduced from 6px */
+    font-size: 0.7rem; /* Reduced from 0.9rem */
+}
+
+/* Make the equipment selects and inputs smaller */
+.equipment-select, .equipment-input, .notes-input {
+    padding: 2px 3px;
+    font-size: 0.7rem;
+    height: 22px;
+}
+
+.equipment-select {
+    width: 50px; /* Reduced from default */
+}
+
+.equipment-input {
+    width: 40px; /* Reduced from 50px */
+}
+
+.notes-input {
+    width: 120px; /* Reduced from 150px */
+}
+
+/* Add compact styles for the calendar section */
+.calendar-section {
+    width: 220px; /* Reduced from typical 300px */
+    padding: 0.6rem; /* Reduced padding */
+}
+
+.calendar-table th, 
+.calendar-table td {
+    padding: 2px;
+    font-size: 0.75rem;
+}
+
+.calendar-select {
+    padding: 2px;
+    font-size: 0.75rem;
+}
+
+.today-button, .new-trip-button {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+}
+
+/* Compact trip tabs */
+.tab-button {
+    padding: 5px 8px;
+    min-width: 120px;
+    font-size: 0.75rem;
+}
+
+.tab-title {
+    font-size: 0.8rem;
+}
+
+.tab-info {
+    font-size: 0.7rem;
+}
+
+/* Compact trip info */
+.trip-info {
+    padding: 6px;
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+}
+
+/* Compact header actions */
+.header-actions button {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+}
+
+/* Reset min-width for select elements to make them more compact */
+select.equipment-select {
+    min-width: 0;
+}
