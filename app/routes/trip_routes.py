@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from app.models.models import Trip, Client, TripClientEquipment, TripClass, Place
+from app.models.models import Trip, Client, TripClientEquipment, TripClass, Place, Visit
 from app import db
 from datetime import datetime, date
 import calendar
@@ -167,6 +167,7 @@ def trips_assign_client(trip_id, client_id):
     selected_trip = Trip.query.get_or_404(trip_id)
     selected_client = Client.query.get_or_404(client_id)
     trip_date = selected_trip.date
+    search_term = request.args.get('search', '')  # Get the search term
 
     is_in_visit = False
     client_visits = selected_client.visits
@@ -182,6 +183,7 @@ def trips_assign_client(trip_id, client_id):
         if selected_client not in selected_trip.clients:
             selected_trip.clients.append(selected_client)
             
+            # Create equipment assignment for the client
             last_equipment = TripClientEquipment.query\
                 .filter_by(client_id=client_id)\
                 .order_by(TripClientEquipment.updated_at.desc())\
@@ -200,11 +202,13 @@ def trips_assign_client(trip_id, client_id):
 
             try:
                 db.session.commit()
+                flash(f"Client '{selected_client.name} {selected_client.surname}' successfully added to the trip.", 'success')
             except Exception as e:
                 db.session.rollback()
                 flash(f"Error adding client to trip: {str(e)}", 'error')
 
-    return redirect(url_for('trips.trips_add_clients', trip_id=trip_id, search=request.args.get('search')))
+    # Make sure to pass the search term in the redirect to preserve the search results
+    return redirect(url_for('trips.trips_add_clients', trip_id=trip_id, search=search_term))
 
 @trips.route("/trips/save_equipment/<int:trip_id>/<int:client_id>", methods=['POST'])
 def save_equipment(trip_id, client_id):
@@ -275,3 +279,80 @@ def get_last_equipment(client_id):
         return jsonify({'success': True, 'equipment': None})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+    
+@trips.route("/trips/check_visit_overlap/<int:trip_id>/<int:client_id>")
+def check_visit_overlap(trip_id, client_id):
+    selected_trip = Trip.query.get_or_404(trip_id)
+    selected_client = Client.query.get_or_404(client_id)
+    trip_date = selected_trip.date
+
+    # Check if client has a visit that overlaps with the trip date
+    is_in_visit = False
+    client_visits = selected_client.visits
+
+    for visit in client_visits:
+        if visit.start_date <= trip_date <= visit.end_date:
+            is_in_visit = True
+            break
+
+    return jsonify({
+        'overlap': is_in_visit,
+        'client_name': f"{selected_client.name} {selected_client.surname}",
+        'trip_date': trip_date.strftime('%Y-%m-%d')
+    })
+
+@trips.route("/trips/create_one_day_visit/<int:trip_id>/<int:client_id>")
+def create_one_day_visit(trip_id, client_id):
+    # Get trip and client details
+    selected_trip = Trip.query.get_or_404(trip_id)
+    selected_client = Client.query.get_or_404(client_id)
+    trip_date = selected_trip.date
+    search_term = request.args.get('search', '')
+
+    try:
+        # Create a one-day visit for the client on the trip date
+        new_visit = Visit(
+            start_date=trip_date,
+            end_date=trip_date,
+            place_of_stay="One-day trip",  # Default place of stay for one-day visit
+            leader_client_id=client_id     # The client is the leader of their one-day visit
+        )
+        
+        # Add the client to the visit
+        new_visit.clients.append(selected_client)
+        
+        # Save the visit
+        db.session.add(new_visit)
+        db.session.commit()
+        
+        # Now add the client to the trip
+        if selected_client not in selected_trip.clients:
+            selected_trip.clients.append(selected_client)
+            
+            # Create equipment assignment for the client
+            last_equipment = TripClientEquipment.query\
+                .filter_by(client_id=client_id)\
+                .order_by(TripClientEquipment.updated_at.desc())\
+                .first()
+
+            new_equipment = TripClientEquipment(
+                trip_id=trip_id,
+                client_id=client_id,
+                mask_size=last_equipment.mask_size if last_equipment else None,
+                bcd_size=last_equipment.bcd_size if last_equipment else None,
+                wetsuit_size=last_equipment.wetsuit_size if last_equipment else None,
+                fins_size=last_equipment.fins_size if last_equipment else None,
+                weights_amount=last_equipment.weights_amount if last_equipment else None
+            )
+            db.session.add(new_equipment)
+            db.session.commit()
+            
+            flash(f"Created a one-day visit for {selected_client.name} {selected_client.surname} and added them to the trip.", 'success')
+        else:
+            flash(f"Client {selected_client.name} {selected_client.surname} is already assigned to this trip.", 'warning')
+            
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error creating one-day visit: {str(e)}", 'error')
+    
+    return redirect(url_for('trips.trips_add_clients', trip_id=trip_id, search=search_term))

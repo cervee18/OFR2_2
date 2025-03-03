@@ -3,6 +3,92 @@
 <head>
     <title>Add Clients to Trip</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Modal Dialog Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .modal-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1001;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal-header {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.75rem;
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        .btn-modal {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--light-turquoise);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary {
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            border: 1px solid #ddd;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #9ee6e6;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+    </style>
 </head>
 <body class="popup-body">
     <div class="popup-container">
@@ -10,6 +96,19 @@
             <h2>Add Clients to Trip: {{ trip.name }}</h2>
             <p class="trip-info">{{ trip.trip_class }} - {{ trip.date.strftime('%Y-%m-%d') }}</p>
         </div>
+
+        <!-- Add Flash Messages Section -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages" style="padding: 0 1rem;">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
 
         <div class="popup-content">
             <div class="search-section">
@@ -40,7 +139,7 @@
                                     <td>{{ client.certification_level }}</td>
                                     <td>{{ client.last_dive_day }}</td>
                                     <td>
-                                        <a href="{{ url_for('trips.trips_assign_client', trip_id=trip.id, client_id=client.id) }}" 
+                                        <a href="#" onclick="showAddOptions({{ trip.id }}, {{ client.id }}, '{{ client.name }} {{ client.surname }}', '{{ search_term }}')" 
                                            class="add-client-link">Add</a>
                                     </td>
                                 </tr>
@@ -60,10 +159,69 @@
         </div>
     </div>
 
+    <!-- Visit Options Modal -->
+    <div id="visitOptionsModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Client to Trip</h3>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage"></p>
+                <p>How would you like to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="createFullVisitBtn" class="btn-modal btn-primary">Create Full Visit</button>
+                <button id="createOneDayVisitBtn" class="btn-modal btn-secondary">Create One-Day Visit</button>
+                <button onclick="closeModal()" class="btn-modal btn-danger">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function closePopupAndRefreshParent() {
             window.opener.location.reload();
             window.close();
+        }
+        
+        function showAddOptions(tripId, clientId, clientName, searchTerm) {
+            // First check if the client is already assigned to a visit that overlaps with the trip date
+            checkVisitOverlap(tripId, clientId, clientName, searchTerm);
+        }
+        
+        function checkVisitOverlap(tripId, clientId, clientName, searchTerm) {
+            fetch(`/trips/check_visit_overlap/${tripId}/${clientId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.overlap) {
+                        // If there's an overlap, proceed with assigning the client to the trip
+                        window.location.href = `/trips/assign_client/${tripId}/${clientId}?search=${searchTerm}`;
+                    } else {
+                        // No overlap, show the options modal
+                        document.getElementById('modalMessage').textContent = 
+                            `Client '${clientName}' is not assigned to a visit that overlaps with this trip.`;
+                        
+                        // Set up the buttons with the correct URLs
+                        document.getElementById('createFullVisitBtn').onclick = function() {
+                            window.opener.location.href = `/edit_visit/${clientId}?trip_id=${tripId}&return_to_popup=true`;
+                            window.close();
+                        };
+                        
+                        document.getElementById('createOneDayVisitBtn').onclick = function() {
+                            window.location.href = `/trips/create_one_day_visit/${tripId}/${clientId}?search=${searchTerm}`;
+                        };
+                        
+                        // Show the modal
+                        document.getElementById('visitOptionsModal').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking visit overlap:', error);
+                    alert('An error occurred. Please try again.');
+                });
+        }
+        
+        function closeModal() {
+            document.getElementById('visitOptionsModal').style.display = 'none';
         }
     </script>
 </body>

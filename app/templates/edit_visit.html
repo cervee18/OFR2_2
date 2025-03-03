@@ -4,7 +4,11 @@
 <section class="edit-visit-container">
     <div class="page-header">
         <h2>{% if visit %}Edit Visit{% else %}New Visit{% endif %}</h2>
-        <a href="{{ url_for('clients.client_details', client_id=leader_client_id) }}" class="back-button">Back</a>
+        {% if return_to_popup %}
+            <a href="javascript:window.close();" class="back-button">Cancel</a>
+        {% else %}
+            <a href="{{ url_for('clients.client_details', client_id=leader_client_id) }}" class="back-button">Back</a>
+        {% endif %}
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -20,18 +24,26 @@
     <div class="visit-edit-grid">
         <!-- Visit Details Form -->
         <div class="visit-form-section">
-            <form method="POST" action="{{ url_for('visits.edit_visit', client_id=leader_client_id, visit_id=visit.id if visit else None) }}">
+            {% if trip %}
+                <div class="trip-info-panel">
+                    <h3>Creating visit for trip: {{ trip.name }}</h3>
+                    <p>Trip Date: {{ trip.date.strftime('%Y-%m-%d') }}</p>
+                    <p>Trip Type: {{ trip.trip_class.name if trip.trip_class else 'N/A' }}</p>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('visits.edit_visit', client_id=leader_client_id, visit_id=visit.id if visit else None, trip_id=trip.id if trip else None, return_to_popup=return_to_popup) }}">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Start Date</label>
                         <input type="date" name="start_date" 
-                               value="{{ visit.start_date.strftime('%Y-%m-%d') if visit and visit.start_date else '' }}" 
+                               value="{{ visit.start_date.strftime('%Y-%m-%d') if visit and visit.start_date else default_visit.start_date.strftime('%Y-%m-%d') if default_visit and default_visit.start_date else '' }}" 
                                required>
                     </div>
                     <div class="form-group">
                         <label>End Date</label>
                         <input type="date" name="end_date" 
-                               value="{{ visit.end_date.strftime('%Y-%m-%d') if visit and visit.end_date else '' }}" 
+                               value="{{ visit.end_date.strftime('%Y-%m-%d') if visit and visit.end_date else default_visit.end_date.strftime('%Y-%m-%d') if default_visit and default_visit.end_date else '' }}" 
                                required>
                     </div>
                 </div>
@@ -39,7 +51,7 @@
                     <div class="form-group full-width">
                         <label>Place of Stay</label>
                         <input type="text" name="place_of_stay" 
-                               value="{{ visit.place_of_stay if visit else '' }}" 
+                               value="{{ visit.place_of_stay if visit else trip.place.name if trip and trip.place else '' }}" 
                                required>
                     </div>
                 </div>
@@ -107,9 +119,42 @@
     </div>
 </section>
 
+<style>
+    .trip-info-panel {
+        background-color: #f0f8ff;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #d1e0f0;
+    }
+    
+    .trip-info-panel h3 {
+        margin-top: 0;
+        font-size: 1.1rem;
+        color: #2c5282;
+        margin-bottom: 0.5rem;
+    }
+    
+    .trip-info-panel p {
+        margin: 0.3rem 0;
+        font-size: 0.9rem;
+    }
+</style>
+
 <script>
     var allClients = {{ clients|tojson }};
     var addedClients = {};
+    
+    {% if visit %}
+        {% for client in visit.clients %}
+            {% if client.id != leader_client_id %}
+                addedClients[{{ client.id }}] = {
+                    name: "{{ client.name }} {{ client.surname }}",
+                    email: "{{ client.email }}"
+                };
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
     function searchClients() {
         var input = document.getElementById("clientSearch");
@@ -120,7 +165,7 @@
 
         if (filter !== "") {
             allClients.forEach(client => {
-                if (addedClients[client.id]) return;
+                if (client.id == {{ leader_client_id }} || addedClients[client.id]) return;
 
                 var searchText = `${client.name} ${client.surname} ${client.email}`.toUpperCase();
                 if (searchText.includes(filter)) {
@@ -186,8 +231,27 @@
     function updateSelectedClientIdsField() {
         document.getElementById("selectedClientIdsField").value = Object.keys(addedClients).join(',');
     }
-
-    // Initialize search results
-    searchClients();
+    
+    // Initialize the added clients list and search results
+    window.onload = function() {
+        // Display initially added clients
+        for (var clientId in addedClients) {
+            var clientName = addedClients[clientId].name;
+            
+            var li = document.createElement("li");
+            li.className = "selected-client-item";
+            li.innerHTML = `
+                ${clientName}
+                <button onclick="removeClientFromVisit(${clientId})" class="remove-button">Remove</button>
+            `;
+            document.getElementById("addedClientsList").appendChild(li);
+        }
+        
+        // Update the hidden field
+        updateSelectedClientIdsField();
+        
+        // Initialize search results
+        searchClients();
+    };
 </script>
 {% endblock %}

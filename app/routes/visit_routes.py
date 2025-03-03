@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app.models.models import Client, Visit
+from app.models.models import Client, Visit, Trip, TripClientEquipment
 from app import db
 from datetime import datetime
+from app.services.visit_service import check_for_overlapping_visits
 
 visits = Blueprint('visits', __name__)
 
@@ -10,6 +11,15 @@ visits = Blueprint('visits', __name__)
 def edit_visit(client_id, visit_id=None):
     leader_client = Client.query.get_or_404(client_id)
     all_clients_objects = Client.query.all()
+    
+    # Get the trip_id parameter if coming from the trip popup
+    trip_id = request.args.get('trip_id')
+    return_to_popup = request.args.get('return_to_popup', 'false') == 'true'
+    
+    # If we have a trip_id, get the trip info for default dates
+    trip = None
+    if trip_id:
+        trip = Trip.query.get_or_404(int(trip_id))
 
     # Convert Client objects to dictionaries for JSON serialization
     all_clients = []
@@ -60,7 +70,8 @@ def edit_visit(client_id, visit_id=None):
             return render_template('edit_visit.html', 
                                 leader_client_id=client_id, 
                                 clients=all_clients, 
-                                visit=visit)
+                                visit=visit,
+                                trip=trip)
 
         if visit:  # Editing existing visit
             visit.start_date = start_date
@@ -103,12 +114,61 @@ def edit_visit(client_id, visit_id=None):
             flash('Visit created successfully!', 'success')
         
         db.session.commit()
+        
+        # If we came from a trip popup, assign the client to the trip and return to popup
+        if trip_id:
+            try:
+                trip = Trip.query.get(int(trip_id))
+                leader_client_obj = Client.query.get(client_id)
+                
+                if leader_client_obj and trip and leader_client_obj not in trip.clients:
+                    trip.clients.append(leader_client_obj)
+                    
+                    # Create equipment assignment
+                    last_equipment = TripClientEquipment.query\
+                        .filter_by(client_id=client_id)\
+                        .order_by(TripClientEquipment.updated_at.desc())\
+                        .first()
+
+                    new_equipment = TripClientEquipment(
+                        trip_id=int(trip_id),
+                        client_id=client_id,
+                        mask_size=last_equipment.mask_size if last_equipment else None,
+                        bcd_size=last_equipment.bcd_size if last_equipment else None,
+                        wetsuit_size=last_equipment.wetsuit_size if last_equipment else None,
+                        fins_size=last_equipment.fins_size if last_equipment else None,
+                        weights_amount=last_equipment.weights_amount if last_equipment else None
+                    )
+                    db.session.add(new_equipment)
+                    db.session.commit()
+                    
+                    flash(f"Client {leader_client_obj.name} {leader_client_obj.surname} added to trip.", 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Error adding client to trip: {str(e)}", 'error')
+            
+            if return_to_popup:
+                return redirect(url_for('trips.trips_add_clients', trip_id=trip_id))
+        
         return redirect(url_for('clients.client_details', client_id=client_id))
+
+    # Set default dates if trip is provided
+    if trip and not visit:
+        trip_date = trip.date
+        default_visit = {
+            'start_date': trip_date,
+            'end_date': trip_date,
+        }
+    else:
+        default_visit = None
 
     return render_template('edit_visit.html', 
                          leader_client_id=client_id, 
                          clients=all_clients, 
-                         visit=visit)
+                         visit=visit,
+                         trip=trip,
+                         default_visit=default_visit,
+                         return_to_popup=return_to_popup)
 
 @visits.route("/delete_visit/<int:client_id>/<int:visit_id>", methods=['POST'])
 def delete_visit(client_id, visit_id):
