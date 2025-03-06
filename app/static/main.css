@@ -1,0 +1,15 @@
+/* 
+ * This is the main CSS file that imports all other CSS files
+ * This allows us to maintain separation of concerns while
+ * only needing to include one CSS file in the base template
+ */
+
+/* Import base styles first */
+@import 'base.css';
+
+/* Import feature-specific styles */
+@import 'home.css';
+@import 'clients.css';
+@import 'visits.css';
+@import 'trips.css';
+@import 'popup.css';

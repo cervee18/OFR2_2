@@ -1,0 +1,194 @@
+/* Popup styles for add clients to trip */
+.popup-body {
+    background: #f8f9fa;
+    margin: 0;
+    padding: 1rem;
+    height: 100vh;
+}
+
+.popup-container {
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.popup-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.trip-info {
+    margin: .5rem 0 0;
+    color: #666;
+}
+
+.popup-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.search-section {
+    margin-bottom: 1rem;
+}
+
+.clients-results {
+    margin-top: 1rem;
+}
+
+.popup-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: right;
+}
+
+.add-client-link {
+    display: inline-block;
+    padding: .3rem .6rem;
+    background: var(--light-turquoise);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: .8rem;
+}
+
+.close-button {
+    padding: .5rem 1rem;
+    background: #f8f9fa;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-container .flash-messages {
+    margin-bottom: 1rem;
+}
+
+.popup-container .flash-message {
+    padding: .7rem 1rem;
+    border-radius: 4px;
+    margin-bottom: .5rem;
+    font-size: .9rem;
+}
+
+.popup-container .flash-message.warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+
+.popup-container .flash-message.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.popup-container .flash-message.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+/* Modal Dialog Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.modal-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1001;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-header {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.75rem;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.btn-modal {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--light-turquoise);
+    color: var(--text-color);
+}
+
+.btn-secondary {
+    background-color: #f8f9fa;
+    color: var(--text-color);
+    border: 1px solid #ddd;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #9ee6e6;
+}
+
+.btn-secondary:hover {
+    background-color: #e9ecef;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-hover);
+}
+
+@media (max-width: 768px) {
+    .popup-body {
+        padding: 0;
+    }
+
+    .popup-container {
+        height: 100vh;
+        border-radius: 0;
+    }
+}

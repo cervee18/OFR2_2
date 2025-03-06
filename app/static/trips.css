@@ -1,0 +1,451 @@
+/* Trips page styles */
+.trips-container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.trips-header {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--padding-standard);
+    margin-bottom: 30px;
+}
+
+.trips-page {
+    display: flex;
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--padding-standard);
+    gap: 30px;
+}
+
+/* Calendar section */
+.calendar-section {
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    width: 220px;
+    padding: .6rem;
+}
+
+.calendar-header {
+    margin-bottom: 1rem;
+}
+
+.calendar-nav {
+    display: flex;
+    gap: .5rem;
+}
+
+.calendar-select {
+    padding: 2px;
+    font-size: .75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.calendar-table td, .calendar-table th {
+    text-align: center;
+    padding: 2px;
+    font-size: .75rem;
+}
+
+.calendar-table th {
+    background: #f8f9fa;
+    font-weight: 500;
+}
+
+.calendar-table td {
+    border: 1px solid var(--border-color);
+}
+
+.calendar-table td a {
+    display: block;
+    padding: .2rem;
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.calendar-table td.selected-day {
+    background-color: var(--light-turquoise);
+}
+
+.calendar-table td.other-month {
+    background-color: #f8f9fa;
+    color: #ccc;
+}
+
+.calendar-actions {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.today-button {
+    padding: 2px 6px;
+    font-size: .75rem;
+    border: 0;
+    border-radius: 4px;
+    background-color: var(--light-turquoise);
+    color: var(--text-color);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.new-trip-button {
+    padding: 2px 6px;
+    font-size: .75rem;
+    border: 0;
+    border-radius: 4px;
+    background-color: var(--light-turquoise);
+    color: var(--text-color);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Daily trips section */
+.daily-trips-section {
+    background: #fff;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+
+.date-header {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+}
+
+.trips-tabs {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+
+.tabs-list {
+    display: flex;
+    gap: .2rem;
+    padding: .5rem .5rem 0;
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.tab-button {
+    padding: 5px 8px;
+    min-width: 120px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    text-align: left;
+    font-size: .75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-button.active {
+    background: var(--light-turquoise);
+}
+
+.tab-title {
+    font-size: .8rem;
+    display: block;
+    font-weight: 500;
+}
+
+.tab-info {
+    font-size: .7rem;
+    display: block;
+    color: #666;
+}
+
+.trip-details {
+    padding: 1rem;
+}
+
+.trip-info {
+    background: #f8f9fa;
+    padding: 6px;
+    margin-bottom: 8px;
+    font-size: .75rem;
+    border-radius: 4px;
+}
+
+.tabs-header {
+    display: flex;
+    gap: 2px;
+    background-color: #f1f1f1;
+    padding: 8px 8px 0;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    overflow-x: auto;
+    border-bottom: 2px solid var(--light-turquoise);
+}
+
+.tab-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: .8em;
+    color: #666;
+}
+
+.tab-details span {
+    display: block;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: .9rem;
+}
+
+.trip-info h4 {
+    border-bottom: 2px solid var(--light-turquoise);
+    margin-top: 0;
+    color: var(--text-color);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.trip-info strong {
+    color: var(--text-color);
+    display: inline-block;
+    min-width: 100px;
+}
+
+.trip-info p {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+/* Participants section */
+.participants-section {
+    margin-top: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.participants-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .75rem;
+}
+
+.participants-header h4 {
+    margin: 0;
+    font-size: .85rem;
+}
+
+.participants-header h4 span {
+    background-color: var(--light-turquoise);
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-left: 3px;
+    font-size: .75rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+.header-actions button {
+    padding: 3px 6px;
+    font-size: .7rem;
+}
+
+.add-client-button {
+    padding: .4rem .8rem;
+    font-size: .9rem;
+    border: 0;
+    border-radius: 4px;
+    background-color: var(--light-turquoise);
+    color: var(--text-color);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.equipment-button {
+    padding: .2rem .4rem;
+    font-size: .8rem;
+    border: 0;
+    border-radius: 4px;
+    background-color: var(--light-turquoise);
+    color: var(--text-color);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.participants-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .9rem;
+}
+
+.participants-table td, .participants-table th {
+    padding: 3px 4px;
+    font-size: .7rem;
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.participants-table th {
+    background: #f8f9fa;
+    font-weight: 500;
+    text-align: left;
+}
+
+.participants-table td:first-child, .participants-table th:first-child {
+    position: sticky;
+    left: 0;
+    background: inherit;
+    z-index: 1;
+    width: 30px;
+    text-align: center;
+    background-color: #f0f0f0;
+    font-weight: 500;
+    font-size: .7rem;
+}
+
+.client-name-link {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.client-name-link:hover {
+    color: var(--light-turquoise);
+}
+
+.equipment-input, .equipment-select, .notes-input {
+    padding: 2px 3px;
+    font-size: .7rem;
+    height: 22px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+.equipment-select {
+    width: 50px;
+}
+
+.equipment-input {
+    width: 40px;
+}
+
+.notes-input {
+    width: 120px;
+}
+
+.equipment-input:focus, .equipment-select:focus, .notes-input:focus {
+    outline: 0;
+    border-color: var(--light-turquoise);
+    box-shadow: 0 0 0 2px rgba(175,238,238,.2);
+}
+
+.empty-slot {
+    background-color: #f8f8f8;
+    height: 32px;
+}
+
+.empty-slot td {
+    border: 1px dashed #ccc;
+    text-align: center;
+}
+
+.add-client-cell {
+    text-align: center;
+}
+
+.add-client-button-inline {
+    padding: 3px 6px;
+    background-color: #e6f7f7;
+    border: 1px dashed var(--light-turquoise);
+    border-radius: 3px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: .7rem;
+    transition: all .2s ease;
+}
+
+.add-client-button-inline:hover {
+    background-color: var(--light-turquoise);
+}
+
+.filled-slot {
+    background-color: #fff;
+    height: 32px;
+}
+
+.row-modified {
+    background-color: #fff8e8;
+}
+
+.no-participants, .no-trips {
+    text-align: center;
+    color: #666;
+    padding: 1rem;
+    font-style: italic;
+}
+
+/* Trip edit page */
+.edit-trip-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.edit-trip-form-container {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.optional {
+    font-size: 0.85em;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .trips-container {
+        grid-template-columns: 1fr;
+    }
+
+    .info-row {
+        flex-direction: column;
+        gap: .5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
