@@ -169,19 +169,22 @@ def trips_assign_client(trip_id, client_id):
     trip_date = selected_trip.date
     search_term = request.args.get('search', '')  # Get the search term
 
-    is_in_visit = False
-    client_visits = selected_client.visits
-
-    for visit in client_visits:
+    # Find if client has a visit that includes this trip date
+    matching_visit = None
+    for visit in selected_client.visits:
         if visit.start_date <= trip_date <= visit.end_date:
-            is_in_visit = True
+            matching_visit = visit
             break
 
-    if not is_in_visit:
+    if not matching_visit:
         flash(f"Client '{selected_client.name} {selected_client.surname}' is not assigned to a visit that overlaps with {trip_date.strftime('%Y-%m-%d')}.", 'warning')
     else:
         if selected_client not in selected_trip.clients:
+            # Add client to trip
             selected_trip.clients.append(selected_client)
+            
+            # Set the visit for this trip
+            selected_trip.visit = matching_visit
             
             # Create equipment assignment for the client
             last_equipment = TripClientEquipment.query\
@@ -209,6 +212,7 @@ def trips_assign_client(trip_id, client_id):
 
     # Make sure to pass the search term in the redirect to preserve the search results
     return redirect(url_for('trips.trips_add_clients', trip_id=trip_id, search=search_term))
+
 
 @trips.route("/trips/save_equipment/<int:trip_id>/<int:client_id>", methods=['POST'])
 def save_equipment(trip_id, client_id):
@@ -256,6 +260,7 @@ def save_equipment(trip_id, client_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)})
+    
 @trips.route("/trips/get_last_equipment/<int:client_id>")
 def get_last_equipment(client_id):
     try:
@@ -323,11 +328,12 @@ def create_one_day_visit(trip_id, client_id):
         
         # Save the visit
         db.session.add(new_visit)
-        db.session.commit()
+        db.session.flush()  # Generate the ID for new_visit
         
-        # Now add the client to the trip
+        # Now add the client to the trip and associate trip with the visit
         if selected_client not in selected_trip.clients:
             selected_trip.clients.append(selected_client)
+            selected_trip.visit = new_visit  # Associate the trip with the visit
             
             # Create equipment assignment for the client
             last_equipment = TripClientEquipment.query\

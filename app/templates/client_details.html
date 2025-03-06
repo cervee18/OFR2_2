@@ -94,14 +94,67 @@
                     {% for visit_item in visits_data %}
                         {% set visit = visit_item.visit %}
                         {% set leader = visit_item.leader_client %}
-                        <div class="visit-item">
-                            <div class="visit-item-header">
-                                <span>{{ visit.start_date.strftime('%Y-%m-%d') }} - {{ visit.end_date.strftime('%Y-%m-%d') }}</span>
-                                <a href="{{ url_for('visits.edit_visit', visit_id=visit.id, client_id=client.id) }}" class="edit-link">Edit</a>
+                        {% set other_clients = visit_item.other_clients %}
+                        <div class="visit-card">
+                            <div class="visit-card-header">
+                                <div class="visit-dates">
+                                    {{ visit.start_date.strftime('%b %d, %Y') }} - {{ visit.end_date.strftime('%b %d, %Y') }}
+                                </div>
+                                <a href="{{ url_for('visits.edit_visit', visit_id=visit.id, client_id=client.id) }}" class="edit-link">
+                                    <button class="edit-button">Edit</button>
+                                </a>
                             </div>
-                            <div class="visit-item-details">
-                                <span>{{ visit.place_of_stay }}</span>
-                                <span>Leader: {{ leader.name if leader else 'Unknown' }}</span>
+                            <div class="visit-details">
+                                <div class="visit-place">
+                                    <strong>Place of stay:</strong> {{ visit.place_of_stay }}
+                                </div>
+                                <div class="visit-leader">
+                                    <strong>Leader:</strong> 
+                                    {% if leader %}
+                                        <a href="{{ url_for('clients.client_details', client_id=leader.id) }}" class="client-link">
+                                            {{ leader.name }} {{ leader.surname }}
+                                        </a>
+                                    {% else %}
+                                        <span class="no-leader">Unknown</span>
+                                    {% endif %}
+                                </div>
+                                <div class="visit-clients">
+                                    <strong>Clients:</strong>
+                                    {% if other_clients %}
+                                        <ul class="clients-list">
+                                            {% for client_obj in other_clients %}
+                                                <li>
+                                                    <a href="{{ url_for('clients.client_details', client_id=client_obj.id) }}" class="client-link">
+                                                        {{ client_obj.name }} {{ client_obj.surname }}
+                                                    </a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <span class="no-clients">No other clients</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <!-- New section for trips -->
+                            <div class="visit-trips">
+                                <strong>Trips during visit:</strong>
+                                {% if trips %}
+                                    <ul class="trips-list">
+                                        {% for trip in trips %}
+                                            <li class="trip-item">
+                                                <a href="{{ url_for('trips.trip_list', date=trip.date.strftime('%Y-%m-%d'), selected_trip_id=trip.id) }}" class="trip-link">
+                                                    <span class="trip-date">{{ trip.date.strftime('%b %d') }}</span>
+                                                    <span class="trip-name">{{ trip.name }}</span>
+                                                    {% if trip.trip_class %}
+                                                    <span class="trip-time">{{ trip.start_time.strftime('%H:%M') if trip.start_time }}</span>
+                                                    {% endif %}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="no-trips">No trips assigned</span>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}

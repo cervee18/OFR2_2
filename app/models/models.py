@@ -1,12 +1,12 @@
 from app import db
-
+from datetime import datetime
 
 clients_trips_association = db.Table('clients_trips',
     db.Column('client_id', db.Integer, db.ForeignKey('client.id'), primary_key=True),
     db.Column('trip_id', db.Integer, db.ForeignKey('trip.id'), primary_key=True)
 )
 
-# --- New Association Table for Client-Visit (Many-to-Many) ---
+# --- Association Table for Client-Visit (Many-to-Many) ---
 client_visits_association = db.Table('client_visits',
     db.Column('client_id', db.Integer, db.ForeignKey('client.id'), primary_key=True),
     db.Column('visit_id', db.Integer, db.ForeignKey('visit.id'), primary_key=True)
@@ -25,8 +25,9 @@ class Client(db.Model):
     certification_level = db.Column(db.String(50))
     nitrox_certification_number = db.Column(db.String(50))
     # --- Many-to-Many Relationship with Visit and Trips ---
-    visits = db.relationship('Visit', secondary=client_visits_association)
+    visits = db.relationship('Visit', secondary=client_visits_association, back_populates='clients')
     trips = db.relationship('Trip', secondary=clients_trips_association, back_populates='clients')
+    
     def __repr__(self):
         return f"<Client {self.name} {self.surname}>"
 
@@ -37,10 +38,16 @@ class Visit(db.Model):
     place_of_stay = db.Column(db.String(100))
     leader_client_id = db.Column(db.Integer)
     
-    # Add this relationship if it's not already there
+    # Relationship with clients
     clients = db.relationship('Client', 
-                            secondary=client_visits_association,
-                            back_populates='visits')
+                              secondary=client_visits_association,
+                              back_populates='visits')
+    
+    # New relationship with trips
+    trips = db.relationship('Trip', back_populates='visit')
+    
+    def __repr__(self):
+        return f"<Visit {self.start_date} to {self.end_date}>"
 
 class Trip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,14 +58,18 @@ class Trip(db.Model):
     max_divers = db.Column(db.Integer)
     date = db.Column(db.Date, nullable=False)
     place_id = db.Column(db.Integer, db.ForeignKey('place.id'))
+    
+    # New relationship with Visit
+    visit_id = db.Column(db.Integer, db.ForeignKey('visit.id'), nullable=True)
+    visit = db.relationship('Visit', back_populates='trips')
 
     # Relationship to TripClass
     trip_class = db.relationship('TripClass', backref='trips', lazy=True)
     
-    # Keep existing relationships
+    # Relationship to clients
     clients = db.relationship('Client',
-                            secondary=clients_trips_association,
-                            back_populates='trips')
+                              secondary=clients_trips_association,
+                              back_populates='trips')
     
     def __repr__(self):
         return f"Trip('{self.name}', '{self.trip_class.name if self.trip_class else 'No Class'}', '{self.date}')"
@@ -71,8 +82,6 @@ class Staff(db.Model):
 
     def __repr__(self):
         return f"<Staff {self.staff_name} {self.staff_surname}>"
-    
-from datetime import datetime
 
 class TripClientEquipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

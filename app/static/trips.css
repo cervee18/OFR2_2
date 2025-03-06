@@ -449,3 +449,24 @@
         grid-template-columns: 1fr;
     }
 }
+/* Additional styles for trips in visits */
+.visit-trips {
+    margin-top: 1rem;
+    border-top: 1px dashed #e0e0e0;
+    padding-top: 0.75rem;
+}
+
+.trips-list {
+    margin: 0.5rem 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.trip-item {
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid var(--light-turquoise);
+}
+
+/* Additional styles for trip links and elements */

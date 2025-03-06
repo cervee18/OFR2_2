@@ -1,0 +1,331 @@
+/* Visits section in client details */
+.visits-section {
+    background: #fff;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    margin-top: 3rem;
+}
+
+.visits-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.visits-header h3 {
+    font-size: 1.2rem;
+    margin: 0;
+    color: var(--text-color);
+}
+
+.add-visit-button {
+    padding: .4rem .8rem;
+    background-color: var(--light-turquoise);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    transition: background-color .2s ease;
+}
+
+.add-visit-button:hover {
+    background-color: #9ee6e6;
+}
+
+.visits-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.visit-item {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: .5rem;
+}
+
+.visit-item-header, .visit-item-details {
+    padding: .5rem;
+    font-size: .9rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.visit-item-header {
+    background: #f8f9fa;
+    align-items: center;
+}
+
+.visit-block {
+    border: 1px solid var(--border-color);
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+}
+
+.client-visits {
+    margin-top: 30px;
+}
+
+/* Edit visit page */
+.edit-visit-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.visit-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.visit-form-section, .clients-selection-section {
+    background: #fff;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+
+.trip-info-panel {
+    background-color: #f0f8ff;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #d1e0f0;
+}
+
+.trip-info-panel h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #2c5282;
+    margin-bottom: 0.5rem;
+}
+
+.trip-info-panel p {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.clients-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.selected-clients-panel, .search-results-panel {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: .75rem;
+}
+
+.selected-clients-panel h3, .search-results-panel h3 {
+    font-size: 1rem;
+    margin: 0 0 .75rem;
+    color: var(--text-color);
+}
+
+.clients-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.selected-client-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .5rem;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: .5rem;
+    font-size: .9rem;
+}
+
+.search-results-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.edit-visit .client-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: var(--padding-standard);
+}
+
+.edit-visit .added-clients-list {
+    margin-bottom: var(--padding-standard);
+}
+
+.edit-visit .added-clients-list li {
+    margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.visits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.visit-card {
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    overflow: hidden;
+}
+
+.visit-card-header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.visit-dates {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.visit-details {
+    padding: 1rem;
+}
+
+.visit-details p {
+    margin-bottom: .8rem;
+}
+
+.no-clients, .no-leader, .no-visits {
+    color: #666;
+    font-style: italic;
+}
+
+.add-button, .remove-button {
+    padding: .25rem .5rem;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: .8rem;
+}
+
+.add-button {
+    background-color: var(--light-turquoise);
+    color: var(--text-color);
+}
+
+.remove-button {
+    background-color: #ffebee;
+    color: var(--danger-color);
+}
+
+.clients-list a, .visit-leader a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+.clients-list a:hover, .visit-leader a:hover {
+    color: var(--light-turquoise);
+}
+
+@media (max-width: 768px) {
+    .visit-edit-grid, .clients-panels, .visits-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Enhanced Visits Section Styles */
+.visits-list {
+    display: grid;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.visit-card {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+
+.visit-card:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+.visit-card-header {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.visit-dates {
+    font-weight: 600;
+    color: #495057;
+}
+
+.edit-button {
+    padding: 0.25rem 0.5rem;
+    background-color: var(--light-turquoise);
+    border: none;
+    border-radius: 4px;
+    color: var(--text-color);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.edit-button:hover {
+    background-color: #12b8b8;
+}
+
+.visit-details {
+    padding: 1rem;
+}
+
+.visit-place, .visit-leader {
+    margin-bottom: 0.5rem;
+}
+
+.visit-clients {
+    margin-top: 0.75rem;
+}
+
+.clients-list {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.clients-list li {
+    margin-bottom: 0.3rem;
+}
+
+.client-link {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.client-link:hover {
+    color: var(--light-turquoise);
+}
+
+.no-leader, .no-clients, .no-visits {
+    color: #6c757d;
+    font-style: italic;
+}
