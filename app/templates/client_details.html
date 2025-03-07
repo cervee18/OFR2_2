@@ -138,16 +138,12 @@
                             <!-- New section for trips -->
                             <div class="visit-trips">
                                 <strong>Trips during visit:</strong>
-                                {% if trips %}
+                                {% if visit_item.trips %}
                                     <ul class="trips-list">
-                                        {% for trip in trips %}
+                                        {% for trip in visit_item.trips %}
                                             <li class="trip-item">
                                                 <a href="{{ url_for('trips.trip_list', date=trip.date.strftime('%Y-%m-%d'), selected_trip_id=trip.id) }}" class="trip-link">
-                                                    <span class="trip-date">{{ trip.date.strftime('%b %d') }}</span>
                                                     <span class="trip-name">{{ trip.name }}</span>
-                                                    {% if trip.trip_class %}
-                                                    <span class="trip-time">{{ trip.start_time.strftime('%H:%M') if trip.start_time }}</span>
-                                                    {% endif %}
                                                 </a>
                                             </li>
                                         {% endfor %}
