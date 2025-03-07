@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Visit Clients to Trip</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .popup-body {
+            background: #f8f9fa;
+            margin: 0;
+            padding: 1rem;
+            height: 100vh;
+        }
+        
+        .popup-container {
+            background: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            height: calc(100vh - 2rem);
+            width: 95%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .popup-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .popup-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2c5282;
+        }
+        
+        .popup-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .popup-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            text-align: right;
+        }
+        
+        .visit-clients-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .visit-client-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 0.75rem;
+            background-color: #f8f9fa;
+        }
+        
+        .visit-client-item.already-in-trip {
+            background-color: #e3f2fd;
+            border-left: 3px solid var(--light-turquoise);
+        }
+        
+        .client-checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        
+        .client-info {
+            flex: 1;
+        }
+        
+        .client-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .client-details {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .add-selected-button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--light-turquoise);
+            border: 0;
+            border-radius: 4px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .add-selected-button:hover {
+            background-color: #12b8b8;
+        }
+        
+        .close-button {
+            padding: 0.75rem 1.5rem;
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        .no-other-clients {
+            padding: 1rem;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .trip-info {
+            margin-top: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .flash-messages {
+            margin: 1rem;
+        }
+        
+        .flash-message {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .flash-message.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .flash-message.warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        
+        .flash-message.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body class="popup-body">
+    <div class="popup-container">
+        <div class="popup-header">
+            <h2>Add Visit Clients to Trip: {{ trip.name }}</h2>
+            <p class="trip-info">{{ trip.trip_class.name if trip.trip_class else 'No Class' }} - {{ trip.date.strftime('%Y-%m-%d') }}</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="popup-content">
+            <form id="addClientsForm" method="POST" action="{{ url_for('trips.add_visit_clients_to_trip', trip_id=trip.id, client_id=added_client.id) }}">
+                {% if other_visit_clients %}
+                    <div style="background-color: #e3f2fd; border-radius: 4px; padding: 1rem; margin-bottom: 1.5rem; border-left: 4px solid var(--light-turquoise);">
+                        <p style="margin-top: 0; font-size: 1.1rem;"><strong>{{ added_client.name }} {{ added_client.surname }}</strong> has been added to the trip.</p>
+                        <p style="margin-bottom: 0;">The following clients are in the same visit. Would you like to add them to this trip as well?</p>
+                    </div>
+                    
+                    <ul class="visit-clients-list">
+                        {% for client in other_visit_clients %}
+                            <li class="visit-client-item {{ 'already-in-trip' if client.in_trip }}">
+                                <input type="checkbox" 
+                                       id="client-{{ client.id }}" 
+                                       name="selected_clients" 
+                                       value="{{ client.id }}"
+                                       class="client-checkbox"
+                                       {{ 'disabled checked' if client.in_trip else '' }}>
+                                <div class="client-info">
+                                    <div class="client-name">{{ client.name }} {{ client.surname }}</div>
+                                    <div class="client-details">
+                                        {{ client.certification_level or 'No certification' }}
+                                        {{ '• Nitrox certified' if client.nitrox_certification_number }}
+                                        {{ '• Already in trip' if client.in_trip }}
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="no-other-clients">
+                        <p>There are no other clients in the same visit.</p>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="popup-footer">
+            {% if other_visit_clients %}
+                <button type="submit" form="addClientsForm" class="add-selected-button">Add Selected Clients</button>
+            {% endif %}
+            <button onclick="window.opener.location.reload(); window.close();" class="close-button">Close</button>
+        </div>
+    </div>
+</body>
+</html>

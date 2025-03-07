@@ -167,6 +167,7 @@
             </div>
             <div class="modal-body">
                 <p id="modalMessage"></p>
+                <p id="otherClientsInfo" style="display: none; margin-top: 0.5rem; color: #0277bd; font-style: italic;"></p>
                 <p>How would you like to proceed?</p>
             </div>
             <div class="modal-footer">
@@ -199,6 +200,15 @@
                         // No overlap, show the options modal
                         document.getElementById('modalMessage').textContent = 
                             `Client '${clientName}' is not assigned to a visit that overlaps with this trip.`;
+                        
+                        // Show info about other clients in the same visit if any
+                        const otherClientsInfo = document.getElementById('otherClientsInfo');
+                        if (data.has_other_clients) {
+                            otherClientsInfo.textContent = `Note: This client has ${data.other_clients_count} other client(s) in the same visit.`;
+                            otherClientsInfo.style.display = 'block';
+                        } else {
+                            otherClientsInfo.style.display = 'none';
+                        }
                         
                         // Set up the buttons with the correct URLs
                         document.getElementById('createFullVisitBtn').onclick = function() {

@@ -167,7 +167,7 @@ def trips_assign_client(trip_id, client_id):
     selected_trip = Trip.query.get_or_404(trip_id)
     selected_client = Client.query.get_or_404(client_id)
     trip_date = selected_trip.date
-    search_term = request.args.get('search', '')  # Get the search term
+    search_term = request.args.get('search', '')
 
     # Find if client has a visit that includes this trip date
     matching_visit = None
@@ -187,31 +187,31 @@ def trips_assign_client(trip_id, client_id):
             selected_trip.visit = matching_visit
             
             # Create equipment assignment for the client
-            last_equipment = TripClientEquipment.query\
-                .filter_by(client_id=client_id)\
-                .order_by(TripClientEquipment.updated_at.desc())\
-                .first()
-
-            new_equipment = TripClientEquipment(
-                trip_id=trip_id,
-                client_id=client_id,
-                mask_size=last_equipment.mask_size if last_equipment else None,
-                bcd_size=last_equipment.bcd_size if last_equipment else None,
-                wetsuit_size=last_equipment.wetsuit_size if last_equipment else None,
-                fins_size=last_equipment.fins_size if last_equipment else None,
-                weights_amount=last_equipment.weights_amount if last_equipment else None
-            )
-            db.session.add(new_equipment)
+            equipment = create_equipment_assignment(trip_id, client_id)
+            if equipment:
+                db.session.add(equipment)
 
             try:
                 db.session.commit()
                 flash(f"Client '{selected_client.name} {selected_client.surname}' successfully added to the trip.", 'success')
+                
+                # Get other clients in the same visit
+                other_visit_clients = get_other_visit_clients(matching_visit, selected_client, selected_trip)
+                
+                if other_visit_clients:
+                    # Redirect to our new popup to add other clients from the same visit
+                    return redirect(url_for('trips.add_visit_clients_popup', 
+                                        trip_id=trip_id, 
+                                        client_id=client_id,
+                                        search=search_term))
+                
             except Exception as e:
                 db.session.rollback()
                 flash(f"Error adding client to trip: {str(e)}", 'error')
 
     # Make sure to pass the search term in the redirect to preserve the search results
     return redirect(url_for('trips.trips_add_clients', trip_id=trip_id, search=search_term))
+
 
 
 @trips.route("/trips/save_equipment/<int:trip_id>/<int:client_id>", methods=['POST'])
@@ -284,7 +284,28 @@ def get_last_equipment(client_id):
         return jsonify({'success': True, 'equipment': None})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+def create_equipment_assignment(trip_id, client_id):
+    """Helper function to create equipment assignment"""
+    # Get the most recent equipment used by the client
+    last_equipment = TripClientEquipment.query\
+        .filter_by(client_id=client_id)\
+        .order_by(TripClientEquipment.updated_at.desc())\
+        .first()
+
+    # Create new equipment record
+    new_equipment = TripClientEquipment(
+        trip_id=trip_id,
+        client_id=client_id,
+        mask_size=last_equipment.mask_size if last_equipment else None,
+        bcd_size=last_equipment.bcd_size if last_equipment else None,
+        wetsuit_size=last_equipment.wetsuit_size if last_equipment else None,
+        fins_size=last_equipment.fins_size if last_equipment else None,
+        weights_amount=last_equipment.weights_amount if last_equipment else None
+    )
     
+    return new_equipment
+
 @trips.route("/trips/check_visit_overlap/<int:trip_id>/<int:client_id>")
 def check_visit_overlap(trip_id, client_id):
     selected_trip = Trip.query.get_or_404(trip_id)
@@ -293,18 +314,123 @@ def check_visit_overlap(trip_id, client_id):
 
     # Check if client has a visit that overlaps with the trip date
     is_in_visit = False
+    visit_id = None
     client_visits = selected_client.visits
 
     for visit in client_visits:
         if visit.start_date <= trip_date <= visit.end_date:
             is_in_visit = True
+            visit_id = visit.id
             break
+
+    # Check if there are other clients in the same visit (if a visit was found)
+    other_clients_count = 0
+    if is_in_visit and visit_id:
+        visit = Visit.query.get(visit_id)
+        if visit:
+            # Count other clients in the visit (excluding the selected client)
+            other_clients_count = len([c for c in visit.clients if c.id != client_id])
 
     return jsonify({
         'overlap': is_in_visit,
         'client_name': f"{selected_client.name} {selected_client.surname}",
-        'trip_date': trip_date.strftime('%Y-%m-%d')
+        'trip_date': trip_date.strftime('%Y-%m-%d'),
+        'has_other_clients': other_clients_count > 0,
+        'other_clients_count': other_clients_count
     })
+
+@trips.route("/trips/add_visit_clients_popup/<int:trip_id>/<int:client_id>")
+def add_visit_clients_popup(trip_id, client_id):
+    """Show popup with other clients from the same visit"""
+    trip = Trip.query.get_or_404(trip_id)
+    added_client = Client.query.get_or_404(client_id)
+    
+    # Find which visit this client is in that overlaps with the trip
+    matching_visit = None
+    for visit in added_client.visits:
+        if visit.start_date <= trip.date <= visit.end_date:
+            matching_visit = visit
+            break
+    
+    if not matching_visit:
+        flash("No matching visit found for this client.", "warning")
+        return render_template('add_visit_clients_popup.html', 
+                               trip=trip, 
+                               added_client=added_client, 
+                               other_visit_clients=[])
+    
+    # Get all other clients in the same visit
+    other_visit_clients = get_other_visit_clients(matching_visit, added_client, trip)
+    
+    return render_template('add_visit_clients_popup.html', 
+                           trip=trip, 
+                           added_client=added_client,
+                           other_visit_clients=other_visit_clients)
+
+@trips.route("/trips/add_visit_clients_to_trip/<int:trip_id>/<int:client_id>", methods=['POST'])
+def add_visit_clients_to_trip(trip_id, client_id):
+    """Add selected clients from the visit to the trip"""
+    trip = Trip.query.get_or_404(trip_id)
+    
+    # Get the selected client IDs from the form
+    selected_client_ids = request.form.getlist('selected_clients')
+    
+    if not selected_client_ids:
+        flash("No clients were selected.", "warning")
+        return redirect(url_for('trips.trips_add_clients', trip_id=trip_id))
+    
+    clients_added = 0
+    
+    for client_id in selected_client_ids:
+        client = Client.query.get(int(client_id))
+        if not client:
+            continue
+            
+        if client in trip.clients:
+            continue  # Skip clients already in the trip
+        
+        # Add client to trip
+        trip.clients.append(client)
+        
+        # Create equipment assignment
+        equipment = create_equipment_assignment(trip_id, client.id)
+        if equipment:
+            db.session.add(equipment)
+            
+        clients_added += 1
+    
+    if clients_added > 0:
+        try:
+            db.session.commit()
+            flash(f"Successfully added {clients_added} client(s) to the trip.", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error adding clients: {str(e)}", "error")
+    
+    # Close popup and refresh parent window
+    return """
+        <script>
+            window.opener.location.reload();
+            window.close();
+        </script>
+    """
+def get_other_visit_clients(visit, current_client, trip):
+    """Get all other clients in the visit with extra data"""
+    other_clients = []
+    
+    for client in visit.clients:
+        if client.id != current_client.id:  # Skip the current client
+            other_clients.append({
+                'id': client.id,
+                'name': client.name,
+                'surname': client.surname,
+                'certification_level': client.certification_level,
+                'nitrox_certification_number': client.nitrox_certification_number,
+                'in_trip': client in trip.clients  # Flag if client is already in the trip
+            })
+    
+    return other_clients
+
 
 @trips.route("/trips/create_one_day_visit/<int:trip_id>/<int:client_id>")
 def create_one_day_visit(trip_id, client_id):
@@ -336,24 +462,17 @@ def create_one_day_visit(trip_id, client_id):
             selected_trip.visit = new_visit  # Associate the trip with the visit
             
             # Create equipment assignment for the client
-            last_equipment = TripClientEquipment.query\
-                .filter_by(client_id=client_id)\
-                .order_by(TripClientEquipment.updated_at.desc())\
-                .first()
-
-            new_equipment = TripClientEquipment(
-                trip_id=trip_id,
-                client_id=client_id,
-                mask_size=last_equipment.mask_size if last_equipment else None,
-                bcd_size=last_equipment.bcd_size if last_equipment else None,
-                wetsuit_size=last_equipment.wetsuit_size if last_equipment else None,
-                fins_size=last_equipment.fins_size if last_equipment else None,
-                weights_amount=last_equipment.weights_amount if last_equipment else None
-            )
-            db.session.add(new_equipment)
+            equipment = create_equipment_assignment(trip_id, client_id)
+            if equipment:
+                db.session.add(equipment)
+                
             db.session.commit()
             
             flash(f"Created a one-day visit for {selected_client.name} {selected_client.surname} and added them to the trip.", 'success')
+            
+            # Since this is a newly created visit with only one client,
+            # there's no need to check for other clients in the same visit
+            
         else:
             flash(f"Client {selected_client.name} {selected_client.surname} is already assigned to this trip.", 'warning')
             
