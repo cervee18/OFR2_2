@@ -5,10 +5,10 @@
     <div class="client-header">
         <h2>{{ client.name }} {{ client.surname }}</h2>
         <div class="header-actions">
-            <form method="POST" action="{{ url_for('clients.delete_client', client_id=client.id) }}" class="delete-client-form">
-                <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to delete this client?')">Delete</button>
+            <a href="{{ url_for('clients.client_list') }}" class="header-button">Back to List</a>
+            <form method="POST" action="{{ url_for('clients.delete_client', client_id=client.id) }}" class="delete-client-form" style="display: inline;">
+                <button type="submit" class="header-button delete" onclick="return confirm('Are you sure you want to delete this client?')">Delete Client</button>
             </form>
-            <a href="{{ url_for('clients.client_list') }}" class="back-button">Back</a>
         </div>
     </div>
 

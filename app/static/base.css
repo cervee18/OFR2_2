@@ -254,29 +254,6 @@ main {
     cursor: not-allowed;
 }
 
-.delete-button {
-    background-color: var(--danger-color);
-    color: #fff;
-    border-radius: var(--border-radius);
-    transition: background-color .2s ease;
-}
-
-.delete-button:hover {
-    background-color: var(--danger-hover);
-}
-
-.back-button {
-    background-color: #f8f9fa;
-    color: var(--text-color);
-    text-decoration: none;
-    border-radius: var(--border-radius);
-    transition: background-color .2s ease;
-}
-
-.back-button:hover {
-    background-color: #e9ecef;
-}
-
 /* Table styles */
 .table-common {
     border: 1px solid var(--border-color);
