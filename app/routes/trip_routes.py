@@ -36,8 +36,12 @@ def trip_list():
     selected_year = selected_date.year
     selected_date_str = selected_date.strftime('%Y-%m-%d')
 
-    trips_on_date = Trip.query.filter_by(date=selected_date).all()
-
+    trips_on_date = Trip.query\
+        .filter_by(date=selected_date)\
+        .join(Trip.place)\
+        .order_by(Trip.start_time.asc(), Place.name.asc())\
+        .all()
+    
     selected_trip = None
     clients_on_trip = []
 
@@ -71,13 +75,22 @@ def edit_trip():
     trip_classes = TripClass.query.order_by(TripClass.name).all()
     places = Place.query.order_by(Place.name).all()
     
+    # Get date from the calendar view
     selected_date_str = request.args.get('date')
-    if selected_date_str:
-        try:
+    selected_month = request.args.get('month')
+    selected_year = request.args.get('year')
+    
+    try:
+        if selected_date_str:
+            # If specific date was selected in calendar
             selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
-        except ValueError:
+        elif selected_month and selected_year:
+            # If only month/year were selected, use the first day
+            selected_date = date(int(selected_year), int(selected_month), 1)
+        else:
+            # Default to today if no date context is provided
             selected_date = date.today()
-    else:
+    except ValueError:
         selected_date = date.today()
 
     if request.method == 'POST':
@@ -481,3 +494,24 @@ def create_one_day_visit(trip_id, client_id):
         flash(f"Error creating one-day visit: {str(e)}", 'error')
     
     return redirect(url_for('trips.trips_add_clients', trip_id=trip_id, search=search_term))
+
+@trips.route("/trips/remove_client/<int:trip_id>/<int:client_id>", methods=['POST'])
+def remove_client_from_trip(trip_id, client_id):
+    try:
+        trip = Trip.query.get_or_404(trip_id)
+        client = Client.query.get_or_404(client_id)
+        
+        if client in trip.clients:
+            trip.clients.remove(client)
+            
+            # Delete associated equipment
+            TripClientEquipment.query.filter_by(
+                trip_id=trip_id,
+                client_id=client_id
+            ).delete()
+            
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'Removed {client.name} {client.surname} from trip'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400

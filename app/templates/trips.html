@@ -51,7 +51,7 @@
         </table>
 
         <div class="calendar-actions">
-            <a href="{{ url_for('trips.edit_trip') }}" class="new-trip-button">Create New Trip</a>
+            <a href="{{ url_for('trips.edit_trip', date=selected_date_str, month=selected_month, year=selected_year) }}" class="new-trip-button">Create New Trip</a>
         </div>
     </div>
 
@@ -91,6 +91,12 @@
                                             {% if not selected_trip %}disabled{% endif %}>
                                         + Add
                                     </button>
+                                    <button id="bulkDeleteButton" 
+                                        class="delete-button" 
+                                        onclick="removeSelectedClients()" 
+                                        disabled>
+                                    Delete Selected
+                                    </button>
                                     <button id="saveEquipmentButton" class="save-button" onclick="saveAllEquipment()" disabled>
                                         Save
                                     </button>
@@ -100,6 +106,11 @@
                             <table class="participants-table">
                                 <thead>
                                     <tr>
+                                        <th>
+                                            <input type="checkbox" 
+                                                   id="selectAllClients" 
+                                                   onclick="toggleAllClients(this)">
+                                        </th>
                                         <th>#</th>
                                         <th>Name</th>
                                         <th>Cert</th>
@@ -123,6 +134,12 @@
                                                 data-slot="{{ slot }}"
                                                 class="filled-slot"
                                                 data-original-data='{"mask_size":"{{ equipment.mask_size|default("") }}","bcd_size":"{{ equipment.bcd_size|default("") }}","wetsuit_size":"{{ equipment.wetsuit_size|default("") }}","fins_size":"{{ equipment.fins_size|default("") }}","weights_amount":"{{ equipment.weights_amount|default("") }}","nitrox":"{{ "yes" if client.nitrox_certification_number else "no" }}","notes":"{{ equipment.notes|default("") }}"}'>
+                                                <td>
+                                                    <input type="checkbox" 
+                                                           class="client-checkbox" 
+                                                           data-client-id="{{ client.id }}"
+                                                           onclick="updateDeleteButton()">
+                                                </td>
                                                 <td>{{ slot }}</td>
                                                 <td>
                                                     <a href="{{ url_for('clients.client_details', client_id=client.id) }}" 
@@ -180,14 +197,14 @@
                                                 </td>
                                             </tr>
                                         {% else %}
-                                            <tr class="empty-slot">
-                                                <td>{{ slot }}</td>
-                                                <td colspan="9" class="add-client-cell">
-                                                    <button class="add-client-button-inline" onclick="openAddClientPopup()">
-                                                        + Add to Slot {{ slot }}
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                        <tr class="empty-slot">
+                                            <td>
+                                                <input type="checkbox" disabled>
+                                            </td>
+                                            <td>{{ slot }}</td>
+                                            <td colspan="10" class="add-client-cell">
+                                            </td>
+                                        </tr>
                                         {% endif %}
                                     {% endfor %}
                                 </tbody>
@@ -367,6 +384,51 @@
         return new Promise(resolve => {
             resolve(confirm(message));
         });
+    }
+
+    function toggleAllClients(checkbox) {
+        const checkboxes = document.querySelectorAll('.client-checkbox');
+        checkboxes.forEach(box => {
+            box.checked = checkbox.checked;
+        });
+        updateDeleteButton();
+    }
+
+    function updateDeleteButton() {
+        const checkedBoxes = document.querySelectorAll('.client-checkbox:checked');
+        const bulkDeleteButton = document.getElementById('bulkDeleteButton');
+        bulkDeleteButton.disabled = checkedBoxes.length === 0;
+    }
+
+    function removeSelectedClients() {
+        const checkedBoxes = document.querySelectorAll('.client-checkbox:checked');
+        const tripId = '{{ selected_trip.id }}';
+        const clientIds = Array.from(checkedBoxes).map(box => box.dataset.clientId);
+        
+        if (clientIds.length === 0) return;
+        
+        if (confirm(`Are you sure you want to remove ${clientIds.length} client(s) from this trip?`)) {
+            Promise.all(clientIds.map(clientId => 
+                fetch(`/trips/remove_client/${tripId}/${clientId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }).then(response => response.json())
+            ))
+            .then(results => {
+                const errors = results.filter(r => !r.success);
+                if (errors.length > 0) {
+                    alert(`Failed to remove ${errors.length} client(s). Please try again.`);
+                }
+                // Reload the page to refresh the client list
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error removing clients from trip');
+            });
+        }
     }
 </script>
 {% endblock %}
