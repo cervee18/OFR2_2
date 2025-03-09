@@ -20,7 +20,10 @@ def create_equipment_for_trip(trip_id, client_id):
         bcd_size=last_equipment.bcd_size if last_equipment else None,
         wetsuit_size=last_equipment.wetsuit_size if last_equipment else None,
         fins_size=last_equipment.fins_size if last_equipment else None,
-        weights_amount=last_equipment.weights_amount if last_equipment else None
+        weights_amount=last_equipment.weights_amount if last_equipment else None,
+        deposit_paid=last_equipment.deposit_paid if last_equipment else False,
+        waiver_signed=last_equipment.waiver_signed if last_equipment else False,
+        needs_pickup=last_equipment.needs_pickup if last_equipment else False
     )
     
     return new_equipment
@@ -54,4 +57,10 @@ def update_future_equipment(client_id, current_date, equipment_data):
         future_equipment.wetsuit_size = equipment_data.get('wetsuit_size')
         future_equipment.fins_size = equipment_data.get('fins_size')
         future_equipment.weights_amount = equipment_data.get('weights_amount')
+        
+        # Update the new status fields - now coming directly as boolean values
+        future_equipment.deposit_paid = equipment_data.get('deposit_paid', False)
+        future_equipment.waiver_signed = equipment_data.get('waiver_signed', False)
+        future_equipment.needs_pickup = equipment_data.get('needs_pickup', False)
+        
         future_equipment.updated_at = datetime.utcnow()

@@ -253,6 +253,10 @@ def save_equipment(trip_id, client_id):
         current_equipment.fins_size = data.get('fins_size')
         current_equipment.weights_amount = data.get('weights_amount')
         current_equipment.notes = data.get('notes')
+        current_equipment.deposit_paid = data.get('deposit_paid', False)
+        current_equipment.waiver_signed = data.get('waiver_signed', False)
+        current_equipment.needs_pickup = data.get('needs_pickup', False)
+        
         current_equipment.updated_at = datetime.utcnow()
         
         # Step 2: Update nitrox certification for client if needed
@@ -314,7 +318,10 @@ def create_equipment_assignment(trip_id, client_id):
         bcd_size=last_equipment.bcd_size if last_equipment else None,
         wetsuit_size=last_equipment.wetsuit_size if last_equipment else None,
         fins_size=last_equipment.fins_size if last_equipment else None,
-        weights_amount=last_equipment.weights_amount if last_equipment else None
+        weights_amount=last_equipment.weights_amount if last_equipment else None,
+        deposit_paid=last_equipment.deposit_paid if last_equipment else False,
+        waiver_signed=last_equipment.waiver_signed if last_equipment else False,
+        needs_pickup=last_equipment.needs_pickup if last_equipment else False
     )
     
     return new_equipment

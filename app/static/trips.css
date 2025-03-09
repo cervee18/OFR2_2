@@ -523,3 +523,43 @@
     background-color: #ffaaaa;
     cursor: not-allowed;
 }
+
+/* Add these to your trips.css file */
+
+/* Status columns styling with checkboxes */
+.participants-table th:nth-child(10),
+.participants-table th:nth-child(11),
+.participants-table th:nth-child(12) {
+    text-align: center;
+    width: 40px;
+}
+
+.participants-table td.checkbox-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Style the checkboxes */
+.status-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}
+
+/* Add a simple hover effect */
+.status-checkbox:hover {
+    transform: scale(1.1);
+}
+
+/* Style checked state */
+.status-checkbox:checked {
+    accent-color: #1de6e6;
+}
+
+/* Remove default outline and add a custom one */
+.status-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(29, 230, 230, 0.3);
+}

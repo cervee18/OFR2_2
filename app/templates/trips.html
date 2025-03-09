@@ -104,6 +104,7 @@
                             </div>
 
                             <table class="participants-table">
+                                <!-- Updated table header with new columns -->
                                 <thead>
                                     <tr>
                                         <th>
@@ -111,15 +112,17 @@
                                                    id="selectAllClients" 
                                                    onclick="toggleAllClients(this)">
                                         </th>
-                                        <th>#</th>
                                         <th>Name</th>
                                         <th>Cert</th>
                                         <th>Mask</th>
                                         <th>BCD</th>
                                         <th>Suit</th>
                                         <th>Fins</th>
-                                        <th>Wt</th>
-                                        <th>Nit</th>
+                                        <th>Weight</th>
+                                        <th>Eanx</th>
+                                        <th>Dep</th>
+                                        <th>Wvr</th>
+                                        <th>Pick</th>
                                         <th>Notes</th>
                                     </tr>
                                 </thead>
@@ -133,17 +136,16 @@
                                                 data-trip-id="{{ selected_trip.id }}" 
                                                 data-slot="{{ slot }}"
                                                 class="filled-slot"
-                                                data-original-data='{"mask_size":"{{ equipment.mask_size|default("") }}","bcd_size":"{{ equipment.bcd_size|default("") }}","wetsuit_size":"{{ equipment.wetsuit_size|default("") }}","fins_size":"{{ equipment.fins_size|default("") }}","weights_amount":"{{ equipment.weights_amount|default("") }}","nitrox":"{{ "yes" if client.nitrox_certification_number else "no" }}","notes":"{{ equipment.notes|default("") }}"}'>
+                                                data-original-data='{"mask_size":"{{ equipment.mask_size|default("") }}","bcd_size":"{{ equipment.bcd_size|default("") }}","wetsuit_size":"{{ equipment.wetsuit_size|default("") }}","fins_size":"{{ equipment.fins_size|default("") }}","weights_amount":"{{ equipment.weights_amount|default("") }}","nitrox":"{{ "yes" if client.nitrox_certification_number else "no" }}","deposit_paid":{{ "true" if equipment and equipment.deposit_paid else "false" }},"waiver_signed":{{ "true" if equipment and equipment.waiver_signed else "false" }},"needs_pickup":{{ "true" if equipment and equipment.needs_pickup else "false" }},"notes":"{{ equipment.notes|default("") }}"}'>
                                                 <td>
                                                     <input type="checkbox" 
-                                                           class="client-checkbox" 
-                                                           data-client-id="{{ client.id }}"
-                                                           onclick="updateDeleteButton()">
+                                                        class="client-checkbox" 
+                                                        data-client-id="{{ client.id }}"
+                                                        onchange="updateDeleteButton()">
                                                 </td>
-                                                <td>{{ slot }}</td>
                                                 <td>
                                                     <a href="{{ url_for('clients.client_details', client_id=client.id) }}" 
-                                                       class="client-name-link">
+                                                    class="client-name-link">
                                                         {{ client.name }} {{ client.surname }}
                                                     </a>
                                                 </td>
@@ -181,8 +183,8 @@
                                                 </td>
                                                 <td>
                                                     <input type="number" name="weights_amount" class="equipment-input" 
-                                                           value="{{ equipment.weights_amount if equipment and equipment.weights_amount else '' }}"
-                                                           min="0" max="20">
+                                                        value="{{ equipment.weights_amount if equipment and equipment.weights_amount else '' }}"
+                                                        min="0" max="20">
                                                 </td>
                                                 <td>
                                                     <select name="nitrox" class="equipment-select">
@@ -190,21 +192,36 @@
                                                         <option value="yes" {% if client.nitrox_certification_number %}selected{% endif %}>Yes</option>
                                                     </select>
                                                 </td>
+                                                <td class="checkbox-cell">
+                                                    <input type="checkbox" name="deposit_paid" class="status-checkbox" 
+                                                        {% if equipment and equipment.deposit_paid %}checked{% endif %}
+                                                        onchange="markRowAsModified(this.closest('tr'))">
+                                                </td>
+                                                <td class="checkbox-cell">
+                                                    <input type="checkbox" name="waiver_signed" class="status-checkbox" 
+                                                        {% if equipment and equipment.waiver_signed %}checked{% endif %}
+                                                        onchange="markRowAsModified(this.closest('tr'))">
+                                                </td>
+                                                <td class="checkbox-cell">
+                                                    <input type="checkbox" name="needs_pickup" class="status-checkbox" 
+                                                        {% if equipment and equipment.needs_pickup %}checked{% endif %}
+                                                        onchange="markRowAsModified(this.closest('tr'))">
+                                                </td>
                                                 <td>
                                                     <input type="text" name="trip_notes" class="notes-input"
-                                                           value="{{ equipment.notes if equipment and equipment.notes else '' }}"
-                                                           placeholder="Add notes...">
+                                                        value="{{ equipment.notes if equipment and equipment.notes else '' }}"
+                                                        placeholder="Add notes...">
                                                 </td>
                                             </tr>
                                         {% else %}
-                                        <tr class="empty-slot">
-                                            <td>
-                                                <input type="checkbox" disabled>
-                                            </td>
-                                            <td>{{ slot }}</td>
-                                            <td colspan="10" class="add-client-cell">
-                                            </td>
-                                        </tr>
+                                            <tr class="empty-slot">
+                                                <td>{{ slot }}</td>
+                                                <td colspan="12" class="add-client-cell">
+                                                    <button class="add-client-button-inline" onclick="openAddClientPopup()">
+                                                        + Add to Slot {{ slot }}
+                                                    </button>
+                                                </td>
+                                            </tr>
                                         {% endif %}
                                     {% endfor %}
                                 </tbody>
@@ -292,6 +309,9 @@
             fins_size: row.querySelector('select[name="fins_size"]')?.value || '',
             weights_amount: row.querySelector('input[name="weights_amount"]')?.value || '',
             nitrox: row.querySelector('select[name="nitrox"]')?.value || 'no',
+            deposit_paid: row.querySelector('input[name="deposit_paid"]')?.checked || false,
+        waiver_signed: row.querySelector('input[name="waiver_signed"]')?.checked || false,
+        needs_pickup: row.querySelector('input[name="needs_pickup"]')?.checked || false,
             notes: row.querySelector('input[name="trip_notes"]')?.value || ''
         };
     }
@@ -376,8 +396,25 @@
     }
 
     function hasEquipmentFieldsChanged(current, original) {
-        const equipmentFields = ['mask_size', 'bcd_size', 'wetsuit_size', 'fins_size', 'weights_amount'];
-        return equipmentFields.some(field => current[field] !== original[field]);
+        const equipmentFields = [
+            'mask_size', 
+            'bcd_size', 
+            'wetsuit_size', 
+            'fins_size', 
+            'weights_amount',
+            'deposit_paid',
+            'waiver_signed',
+            'needs_pickup'
+        ];
+        
+        return equipmentFields.some(field => {
+            // For boolean fields, we need to handle the comparison differently
+            if (['deposit_paid', 'waiver_signed', 'needs_pickup'].includes(field)) {
+                // Convert both values to boolean to ensure proper comparison
+                return Boolean(current[field]) !== Boolean(original[field]);
+            }
+            return current[field] !== original[field];
+        });
     }
 
     function showConfirmDialog(title, message) {

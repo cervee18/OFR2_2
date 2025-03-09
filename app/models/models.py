@@ -94,6 +94,9 @@ class TripClientEquipment(db.Model):
     weights_amount = db.Column(db.Integer)
     notes = db.Column(db.Text)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    deposit_paid = db.Column(db.Boolean, default=False)
+    waiver_signed = db.Column(db.Boolean, default=False)
+    needs_pickup = db.Column(db.Boolean, default=False)
 
     # Relationships
     trip = db.relationship('Trip', backref='equipment_assignments')
